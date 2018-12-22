@@ -277,8 +277,12 @@ char* VARARGS CSprintf( const char* fmt, ...)
 	char* Result = (char*)U"";
 	if ( Length > 0 )
 	{
-		Result = CharBuffer<char>(Length+1);
-		vsprintf( Result, fmt, args);
+		char* Buffer = CharBuffer<char>(Length+1);
+		if ( Buffer )
+		{
+			Result = Buffer;
+			vsprintf( Result, fmt, args);
+		}
 	}
 	va_end(args);
 	return Result;
@@ -296,8 +300,12 @@ wchar_t* VARARGS CWSprintf( const wchar_t* fmt, ...)
 	wchar_t* Result = (wchar_t*)U"";
 	if ( Length > 0 )
 	{
-		Result = CharBuffer<wchar_t>(Length+1);
-		vswprintf( Result, Length+1, fmt, args);
+		wchar_t* Buffer = CharBuffer<wchar_t>(Length+1);
+		if ( Buffer )
+		{
+			Result = Buffer;
+			vswprintf( Result, Length+1, fmt, args);
+		}
 	}
 	va_end(args);
 	return Result;

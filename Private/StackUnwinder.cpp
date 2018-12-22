@@ -1,48 +1,93 @@
+/*=============================================================================
+	StackUnwinder.cpp
+	Author: Fernando Velázquez
+
+	Allows guarded code to throw exceptions in case of segmentation fault
+	without having to use SEH.
+=============================================================================*/
 
 
 #include "Atomics.h"
-#include "CacusTemplate.h"
-#include "CacusOutputDevice.h"
-
+#include "DebugCallback.h"
 #include "StackUnwinder.h"
 
 #include <signal.h>
 
-
-//******* Thread statics
-//
-// Points to the highest (most recent) element in the chain
-//
-thread_local CUnwinder* UnwinderChain = nullptr;
-
-
-//******* Signal handlers
-//
 #if _WINDOWS
-#define SIGIOT SIGABRT
-static void SignalHandlerWindows( int signal)
+	extern "C" __declspec(dllimport) uint32 __stdcall GetCurrentThreadId();
+	#define GET_THREAD_ID() GetCurrentThreadId()
 #else
-static void SignalHandlerLinux( int signal, siginfo_t *si, void *unused)
+	#include <unistd.h>
+	#include <sys/syscall.h>
+	#define GET_THREAD_ID() (uint32)syscall(__NR_gettid)
 #endif
+
+//******* Unwinder controller singleton
+//
+//This is required in order to prevent usage of thread_local which causes problems in Windows XP
+//
+struct UnwinderController
+{
+	struct UnwinderEntry
+	{
+		CUnwinder* List;
+		uint32 ThreadId;
+
+		UnwinderEntry( CUnwinder* InUnwinder, uint32 InThreadId)
+			:	List(InUnwinder), ThreadId(InThreadId) {}
+	};
+	volatile int32 Lock;
+	std::vector<UnwinderEntry> Entries;
+
+	UnwinderController()       : Lock(0) {}
+	~UnwinderController()      { Lock = 0; }
+
+	
+	int Attach( CUnwinder* Unwinder); // Returns 1 if first
+	void Detach( CUnwinder* Unwinder);
+	void LongJump();
+};
+static UnwinderController Controller;
+
+
+
+#if _WINDOWS
+	#define SIGIOT SIGABRT
+	#define SignalHandler(signal) SignalHandlerWindows(signal)
+#else
+	#define SignalHandler(signal) SignalHandlerLinux(signal ,siginfo_t* si, void* unused)
+#endif
+
+//******* Signal handlers.
+//
+// SIGSEGV: Restore environment and immediately throw an exception at beginning of guarded code.
+// SIGIOT/SIGABRT: Exit app cleanly.
+// In both cases callback is notified prior to action.
+//
+static void SignalHandler( int signal)
 {
 	if ( signal == SIGSEGV )
-		Cdebug( "Segmentation fault (SIGSEGV)");
+		DebugCallback( "Segmentation fault (SIGSEGV)", CACUS_CALLBACK_UNWINDER);
 	else if ( signal == SIGIOT )
 	{
 		static uint32 Aborted = 0;
 		if ( !Aborted++ )
 		{
-			Cdebug( "Abort process (IOT)");
+			DebugCallback( "Abort process (IOT)", CACUS_CALLBACK_UNWINDER);
 			//Exit app cleanly
 		}
 		exit(0);
 		return;
 	}
-	if ( UnwinderChain )
-		longjmp( UnwinderChain->Environment, 1);
+	Controller.LongJump();
 }
 
 
+//******* This allows a thread to receive signals and handle them in custom ways.
+//
+// SIGSEGV: Segmentation fault has occured
+// SIGIOT/SIGABRT: Program is requested termination.
+//
 void InstallSignalHandlers()
 {
 #if _WINDOWS
@@ -69,17 +114,11 @@ void InstallSignalHandlers()
 // of allocating a new chain of unwinders or not.
 //
 CUnwinder::CUnwinder()
-	: Last(nullptr)
-	, Next(nullptr)
+	: Prev(nullptr)
+	, EnvId(0)
 {
-	if ( UnwinderChain )
-	{
-		Last = UnwinderChain;
-		Last->Next = this;
-	}
-	else
+	if ( Controller.Attach(this) )
 		InstallSignalHandlers();
-	UnwinderChain = this;
 }
 
 
@@ -89,11 +128,86 @@ CUnwinder::CUnwinder()
 //
 CUnwinder::~CUnwinder()
 {
-	if ( Last )
-	{
-		Last->Next = nullptr;
-		UnwinderChain = Last;
-	}
+	Controller.Detach(this);
+}
+
+
+//***************************************************************
+//******* UnwinderController implementation
+//***************************************************************
+
+
+//******* Attaches an unwinder to an unwinder chain
+//
+// Creates a new chain if this is the first unwinder in the thread
+//
+FORCEINLINE int UnwinderController::Attach( CUnwinder* Unwinder)
+{
+	uint32 ThreadId = GET_THREAD_ID();
+	CSpinLock SL(&Lock);
+	for ( size_t i=0 ; i<Entries.size() ; i++ )
+		if ( Entries[i].ThreadId == ThreadId )
+		{
+			Unwinder->EnvId = (uint32)i;
+			Unwinder->Prev = Entries[i].List;
+			Entries[i].List = Unwinder;
+			return 0;
+		}
+	//This is a new thread
+	Unwinder->EnvId = (uint32)Entries.size();
+	Entries.push_back( UnwinderEntry(Unwinder,ThreadId) );
+	return 1;
+}
+
+//******* Detaches an unwinder from an unwinder chain
+//
+// Removes the chain if it's the first unwinder
+// NOTE: The signal handlers aren't uninstalled in this case!
+//
+FORCEINLINE void UnwinderController::Detach( CUnwinder* Unwinder)
+{
+	CSpinLock SL(&Lock);
+	size_t i = Unwinder->EnvId;
+	if ( i >= Entries.size() )
+		DebugCallback( "Stack unwinder Detach error (Bad EnvId), check for stack corruption.", CACUS_CALLBACK_UNWINDER|CACUS_CALLBACK_EXCEPTION);
+	else if ( Entries[i].List != Unwinder )
+		DebugCallback( "Stack unwinder Detach error (Inconsistance in chain), check that out-of-scope unwinder destruction is occuring (and only once per unwinder).", CACUS_CALLBACK_UNWINDER|CACUS_CALLBACK_EXCEPTION);
 	else
-		UnwinderChain = nullptr;
+	{
+		if ( !Unwinder->Prev )
+		{
+			if ( i != (uint32)(Entries.size()-1) ) //Not the last entry
+			{
+				Entries[i] = Entries.back(); //Correct
+				for ( CUnwinder* Link=Entries[i].List ; Link ; Link=Link->Prev )
+					Link->EnvId = (uint32)i;
+			}
+			Entries.pop_back();
+		}
+		else
+			Entries[i].List = Unwinder->Prev;
+	}
+}
+
+//******* Restores environment so that an exception is thrown in guarded code
+//
+// NOTE: Not all C++ objects are guaranteed to be destroyed here.
+// You want to primarily use this to kill off a thread/app.
+//
+FORCEINLINE void UnwinderController::LongJump()
+{
+	uint32 ThreadId = GET_THREAD_ID();
+	CUnwinder* CurrentUnwinder = nullptr;
+	{
+		CSpinLock SL(&Lock);
+		for ( size_t i=0 ; i<Entries.size() && !CurrentUnwinder ; i++ )
+			if ( Entries[i].ThreadId == ThreadId )
+				CurrentUnwinder = Entries[i].List;
+	}
+	if ( !CurrentUnwinder )
+	{
+		DebugCallback( "Stack unwinder Long Jump error (No Entry), SegFault occured outside of first guarded block!.", CACUS_CALLBACK_UNWINDER|CACUS_CALLBACK_EXCEPTION);
+		return;
+	}
+	longjmp( CurrentUnwinder->Environment, 1);
 }
