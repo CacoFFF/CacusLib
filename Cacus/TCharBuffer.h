@@ -42,7 +42,14 @@ public:
 
 	TCharBuffer<N,CHAR>& operator+=(const CHAR* Append)
 	{
-		CStrcat_s(Buffer,N,Append);
+		//Compiler optimization will cause failure to concatenate strings if self-concatenation occurs (or similar)
+		if ( (Append >= &Buffer[0]) && (Append < &Buffer[N]) )
+		{
+			TCharBuffer<N,CHAR> TmpBuf = Append;
+			CStrcat_s(Buffer,N,*TmpBuf);
+		}
+		else
+			CStrcat_s(Buffer,N,Append);
 		return *this;
 	}
 	

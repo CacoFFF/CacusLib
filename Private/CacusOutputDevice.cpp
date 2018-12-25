@@ -93,32 +93,32 @@ void COutputDeviceFile::Open( uint32 AltFilenameAttempts)
 
 	const char* WriteFlags = Opened ? "a+b" : "w+b"; //Append if previously opened
 
-	std::string FilenamePart;
-	std::string ExtensionPart( ".log" );
-	if ( !CStrchr(*Filename,'/') && !CStrchr(*Filename,'\\') )
-		FilenamePart.append( CBaseDir() );
-	if ( Filename[0] )
+	// Separate filename from extension, create missing components if needed
+	// This can parse filenames starting with dots just fine (even if they're bad)
+	const char* FilenamePart = "";
+	const char* ExtensionPart = "";
+	for ( const char* Dot=*Filename ; AdvanceTo( Dot, '.') ; ExtensionPart=Dot++ );
+	if ( *ExtensionPart ) //Found extension in filename
 	{
-		FilenamePart += *Filename;
-		size_t ExtIdx = FilenamePart.find_last_of( '.');
-		if ( (ExtIdx != NPOS) && (FilenamePart.length() - ExtIdx > 1) ) //Extract extension
-		{
-			ExtensionPart = FilenamePart.substr( ExtIdx);
-			FilenamePart.erase( ExtIdx);
-		}
+		FilenamePart = CopyToBuffer( *Filename, ExtensionPart-*Filename);
+		ExtensionPart = CopyToBuffer( ExtensionPart); 
 	}
-	else
-		FilenamePart += "Cacus";
-
-	TChar8Buffer<1024> FinalFilename;
-	sprintf( *FinalFilename, "%s%s", FilenamePart.c_str(), ExtensionPart.c_str() );
-	FilePtr = std::fopen( (FilenamePart+ExtensionPart).c_str(), WriteFlags);
-
-	int FileIndex = 2; //Add _2 if necessary
-	for ( uint32 i=0 ; !FilePtr && i<AltFilenameAttempts ; i++, FileIndex++ )
+	else //Filename has no extension
 	{
-		sprintf( *FinalFilename, "%s_%i%s", FilenamePart.c_str(), FileIndex, ExtensionPart.c_str() );
-		FilePtr = std::fopen( *FinalFilename, WriteFlags);
+		FilenamePart = CopyToBuffer( *Filename);
+		ExtensionPart = ".log";
+	}
+	if ( !*FilenamePart ) //Filename is empty
+		FilenamePart = "Cacus";
+
+	//Allocate large enough buffer
+	char* FinalFilename = (char*)CMalloc( CStrlen(FilenamePart) + CStrlen(ExtensionPart) + 10);
+	sprintf( FinalFilename, "%s%s", FilenamePart, ExtensionPart);
+	FilePtr = std::fopen( FinalFilename, WriteFlags);
+	for ( uint32 i=0 ; !FilePtr && i<AltFilenameAttempts ; i++ ) //Add _2 if necessary
+	{
+		sprintf( FinalFilename, "%s_%i%s", FilenamePart, (int)(i+2), ExtensionPart);
+		FilePtr = std::fopen( FinalFilename, WriteFlags);
 	}
 
 	Dead = (FilePtr == nullptr);

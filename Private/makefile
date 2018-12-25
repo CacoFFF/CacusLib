@@ -1,8 +1,8 @@
 CXX = g++
 
 OTHERSTUFF = -Wl
-CXXFLAGS = -std=gnu++14 -msse2 -m32 -fpermissive -fno-strict-aliasing -O2 -Wall -fvisibility=hidden -I. -I../Cacus
-LDFLAGS = -shared -rdynamic -lc -ldl -lpthread -Wl,-z,defs
+CXXFLAGS = -std=gnu++11 -msse2 -m32 -fpermissive -fno-strict-aliasing -O2 -Wall -fvisibility=hidden -I. -I../Cacus
+LDFLAGS = -shared -m32 -rdynamic -lc -ldl -lpthread -Wl,-z,defs
 OUTPUT = Cacus.so
 LIBS = 
 

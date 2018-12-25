@@ -44,6 +44,7 @@ _CRT_SECURE_NO_WARNINGS
 #define CMemcpy memcpy
 #define CMalloc malloc
 #define CFree free
+#define CMemmove memmove
 
 
 //***************************************

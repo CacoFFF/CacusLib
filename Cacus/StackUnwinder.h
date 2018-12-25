@@ -14,7 +14,8 @@ extern "C" CACUS_API void CFailAssert( const char* Error, const char* File, int3
 class CACUS_API CUnwinder
 {
 public:
-	CUnwinder* Last,* Next;
+	CUnwinder* Prev; //'prev' instead of because it signifies creation time.
+	uint32 EnvId;
 	jmp_buf Environment;
 	unsigned long long __padding; //setjmp appears to be inconsistant between header versions, add this padding just in case
 

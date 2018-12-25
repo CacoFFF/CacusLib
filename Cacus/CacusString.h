@@ -53,7 +53,9 @@ template<> inline constexpr bool CheckCharType<wchar_t>()            { return tr
 	//Constant expression string length (cannot use recursive versions because MSVC isn't fully compliant)
 	template< typename CHAR , size_t ArSize > constexpr FORCEINLINE size_t _len( const CHAR (&Str)[ArSize])
 	{
-		CheckCharType<CHAR>();
+		#if __cplusplus > 201103L
+		CheckCharType<CHAR>(); //Need C++14 to perform this check
+		#endif
 		return ArSize-1;
 	}
 #endif
@@ -100,12 +102,12 @@ extern "C"
 	CACUS_API wchar_t* VARARGS CWSprintf( const wchar_t* fmt, ...); //Print into circular buffer
 }
 
-template< typename CHARDEST , typename CHARSRC > int FORCEINLINE CStrcpy_s( CHARDEST* Dest, uint32 DestChars, const CHARSRC* Src)
+template< typename CHARDEST , typename CHARSRC > int FORCEINLINE CStrcpy_s( CHARDEST* Dest, uint32 DestSize, const CHARSRC* Src)
 {
-	if      ( sizeof(CHARDEST)==1 && sizeof(CHARSRC)==1 ) return CStrcpy8_s ( (char*)  Dest, DestChars, (const char*)   Src);
-	else if ( sizeof(CHARDEST)==2 && sizeof(CHARSRC)==2 ) return CStrcpy16_s( (char16*)Dest, DestChars, (const char16*) Src);
-	else if ( sizeof(CHARDEST)==4 && sizeof(CHARSRC)==4 ) return CStrcpy32_s( (char32*)Dest, DestChars, (const char32*) Src);
-	else                                                  return CStrcpy_g_s( Dest, sizeof(CHARDEST), DestChars, Src, sizeof(CHARSRC));
+	if      ( sizeof(CHARDEST)==1 && sizeof(CHARSRC)==1 ) return CStrcpy8_s ( (char*)  Dest, DestSize, (const char*)   Src);
+	else if ( sizeof(CHARDEST)==2 && sizeof(CHARSRC)==2 ) return CStrcpy16_s( (char16*)Dest, DestSize, (const char16*) Src);
+	else if ( sizeof(CHARDEST)==4 && sizeof(CHARSRC)==4 ) return CStrcpy32_s( (char32*)Dest, DestSize, (const char32*) Src);
+	else                                                  return CStrcpy_g_s( Dest, sizeof(CHARDEST), DestSize, Src, sizeof(CHARSRC));
 }
 
 #ifndef NO_CPP11_TEMPLATES
