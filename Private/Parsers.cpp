@@ -202,7 +202,7 @@ static bool JSON_NeedsStringQuote( const char* Value, size_t Len)
 
 void CParserElement::Export_JSONString( std::string& String)
 {
-	if ( Key.length() )
+	if ( Key.length() && !(Flags & PEF_Inner) )
 		String += CSprintf( "\x22%s\x22:", Key.c_str() );
 
 	if ( Flags & PEF_Object )
@@ -426,6 +426,8 @@ void CProperty::Export( void* From, CParserElement& Elem) const
 		Elem.Flags |= PEF_StringQuoted;
 	if ( PropertyFlags & PF_NullDefault )
 		Elem.Flags |= PEF_Null;
+	if ( PropertyFlags & PF_Inner )
+		Elem.Flags |= PEF_Inner;
 }
 
 void PropertyFixedArray::Export( void* From, CParserElement& Elem) const

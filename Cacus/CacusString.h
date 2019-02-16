@@ -53,9 +53,7 @@ template<> inline constexpr bool CheckCharType<wchar_t>()            { return tr
 	//Constant expression string length (cannot use recursive versions because MSVC isn't fully compliant)
 	template< typename CHAR , size_t ArSize > constexpr FORCEINLINE size_t _len( const CHAR (&Str)[ArSize])
 	{
-		#if __cplusplus > 201103L
-		CheckCharType<CHAR>(); //Need C++14 to perform this check
-		#endif
+		static_assert( CheckCharType<CHAR>(),"_len: Invalid character type");
 		return ArSize-1;
 	}
 #endif

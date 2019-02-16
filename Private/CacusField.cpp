@@ -38,6 +38,11 @@ CField::CField( const char* InName, CStruct* InParent)
 		Next = nullptr;
 }
 
+bool CField::IsType( const char* Type) const
+{
+	return !_stricmp( Type, TypeName() );
+}
+
 CStruct::CStruct( const char* InName, CStruct* InSuper, STRUCT_CREATOR InDefaultCreator, STRUCT_DESTRUCTOR InDefaultDestructor)
 	: CField(InName)
 	, DefaultCreator(InDefaultCreator)

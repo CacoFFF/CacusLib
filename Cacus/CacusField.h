@@ -123,6 +123,8 @@ enum EPropertyFlags
 	PF_NoImport             = 0x00000080,
 	PF_NoDeltaExport        = 0x00000100, //Always export, even if delta
 
+	PF_Inner                = 0x00000200,
+
 	PF_Deprecated           = PF_NoExport | PF_NoImport | PF_NoConfig,
 };
 
@@ -166,10 +168,7 @@ public:
 
 	CField( const char* InName, CStruct* InParent=nullptr);
 
-	bool IsType( const char* Type) const
-	{
-		return !_stricmp( Type, TypeName() );
-	}
+	bool IsType( const char* Type) const;
 
 	virtual const char* TypeName() const
 	{
@@ -545,14 +544,14 @@ class CACUS_API PropertyStringFunction : public CProperty
 
 template<typename A> inline CProperty* CreateProperty( const char* Name, CStruct* Parent, TFixedArray<A>& Prop, uint32 PropertyFlags=0)
 {
-	CProperty* SubProp = CreateProperty( "Inner", nullptr, *((A*)CSTRUCT_BASE), PropertyFlags);
+	CProperty* SubProp = CreateProperty( "Inner", nullptr, *((A*)CSTRUCT_BASE), PropertyFlags|PF_Inner);
 	return CP_CREATE(PropertyFixedArray, SubProp);
 }
 
 #ifdef _VECTOR_
 template<typename A> inline CProperty* CreateProperty( const char* Name, CStruct* Parent, TMasterObjectArray<A>& Prop, uint32 PropertyFlags=0)
 {
-	CProperty* SubProp = CreateProperty( "Inner", nullptr, *((A*)CSTRUCT_BASE), PropertyFlags);
+	CProperty* SubProp = CreateProperty( "Inner", nullptr, *((A*)CSTRUCT_BASE), PropertyFlags|PF_Inner);
 	if ( SubProp->IsTypeA("PropertyStructPtr") )
 		return CP_CREATE(PropertyMasterObjectArray, (PropertyStructPtr*)SubProp);
 	throw "CreateProperty: Incorrect property type";
@@ -561,7 +560,7 @@ template<typename A> inline CProperty* CreateProperty( const char* Name, CStruct
 
 template<typename T> inline CProperty* CreateProperty( const char* Name, CStruct* Parent, std::vector<T>& Prop, uint32 PropertyFlags=0)
 {
-	CProperty* SubProp = CreateProperty( "Inner", nullptr, *((T*)CSTRUCT_BASE), PropertyFlags);
+	CProperty* SubProp = CreateProperty( "Inner", nullptr, *((T*)CSTRUCT_BASE), PropertyFlags|PF_Inner);
 	return CP_CREATE(PropertyStdVector<T>, SubProp);
 }
 #endif
@@ -617,7 +616,7 @@ template<> inline CProperty* CreateProperty<std::string>( const char* Name, CStr
 
 template< typename T > void DataToObject( const char* Data, T& Into, EParseType ParseType)
 {
-	auto* Outer = CreateProperty("",nullptr,*(T*)nullptr,0);
+	auto* Outer = CreateProperty("",nullptr,*(T*)nullptr,PF_Inner);
 	DataToObject( Data, (void*)&Into, Outer, ParseType);
 	delete Outer;
 }
@@ -625,7 +624,7 @@ template< typename T > void DataToObject( const char* Data, T& Into, EParseType 
 
 template< typename T > void ObjectToData( const char*& OutData, const T& From, EParseType ExportType, int DeltaDefaults=0)
 {
-	auto* Outer = CreateProperty("",nullptr,*(T*)nullptr,0);
+	auto* Outer = CreateProperty("",nullptr,*(T*)nullptr,PF_Inner);
 	ObjectToData( OutData, (void*)&From, Outer, ExportType, DeltaDefaults);
 	delete Outer;
 }
@@ -633,8 +632,8 @@ template< typename T > void ObjectToData( const char*& OutData, const T& From, E
 
 template< typename T1, typename T2 > void ObjectToObject( const T1& From, T2& Into)
 {
-	auto* FromOuter = CreateProperty("",nullptr,*(T1*)nullptr,0);
-	auto* IntoOuter = CreateProperty("",nullptr,*(T2*)nullptr,0);
+	auto* FromOuter = CreateProperty("",nullptr,*(T1*)nullptr,PF_Inner);
+	auto* IntoOuter = CreateProperty("",nullptr,*(T2*)nullptr,PF_Inner);
 	ObjectToObject( (void*)&From, (void*)&Into, FromOuter, IntoOuter);
 	delete FromOuter;
 	delete IntoOuter;
