@@ -1,5 +1,6 @@
 
 #include <cstdarg>
+#include <wchar.h>
 
 #include "CacusString.h"
 #include "CacusMem.h"

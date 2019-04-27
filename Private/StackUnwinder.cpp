@@ -10,6 +10,7 @@
 #include "Atomics.h"
 #include "DebugCallback.h"
 #include "StackUnwinder.h"
+#include "CacusTemplate.h"
 
 #include <signal.h>
 
@@ -33,13 +34,15 @@ struct UnwinderController
 		CUnwinder* List;
 		uint32 ThreadId;
 
+		UnwinderEntry() {}
 		UnwinderEntry( CUnwinder* InUnwinder, uint32 InThreadId)
 			:	List(InUnwinder), ThreadId(InThreadId) {}
 	};
 	volatile int32 Lock;
-	std::vector<UnwinderEntry> Entries;
+	size_t EntryCount;
+	UnwinderEntry Entry[1024];  //TODO: Custom made hashmap
 
-	UnwinderController()       : Lock(0) {}
+	UnwinderController()       : Lock(0), EntryCount(0) {}
 	~UnwinderController()      { Lock = 0; }
 
 	
@@ -145,20 +148,21 @@ FORCEINLINE int UnwinderController::Attach( CUnwinder* Unwinder)
 {
 	uint32 ThreadId = GET_THREAD_ID();
 	CSpinLock SL(&Lock);
-	for ( size_t i=0 ; i<Entries.size() ; i++ )
-		if ( Entries[i].ThreadId == ThreadId )
+	for ( size_t i=0 ; i<EntryCount ; i++ )
+		if ( Entry[i].ThreadId == ThreadId )
 		{
 			Unwinder->EnvId = (uint32)i;
-			Unwinder->Prev = Entries[i].List;
-			Entries[i].List = Unwinder;
+			Unwinder->Prev = Entry[i].List;
+			Entry[i].List = Unwinder;
 			return 0;
 		}
 	//This is a new thread
-	Unwinder->EnvId = (uint32)Entries.size();
-	Entries.push_back( UnwinderEntry(Unwinder,ThreadId) );
+	if ( EntryCount == ARRAY_COUNT(Entry) )
+		DebugCallback( "Created more than 1024 stack unwinder units!", CACUS_CALLBACK_UNWINDER|CACUS_CALLBACK_EXCEPTION);
+	Unwinder->EnvId = (uint32)EntryCount;
+	Entry[EntryCount++] = UnwinderEntry(Unwinder,ThreadId);
 	return 1;
 }
-
 //******* Detaches an unwinder from an unwinder chain
 //
 // Removes the chain if it's the first unwinder
@@ -168,24 +172,24 @@ FORCEINLINE void UnwinderController::Detach( CUnwinder* Unwinder)
 {
 	CSpinLock SL(&Lock);
 	size_t i = Unwinder->EnvId;
-	if ( i >= Entries.size() )
+	if ( i >= EntryCount )
 		DebugCallback( "Stack unwinder Detach error (Bad EnvId), check for stack corruption.", CACUS_CALLBACK_UNWINDER|CACUS_CALLBACK_EXCEPTION);
-	else if ( Entries[i].List != Unwinder )
+	else if ( Entry[i].List != Unwinder )
 		DebugCallback( "Stack unwinder Detach error (Inconsistance in chain), check that out-of-scope unwinder destruction is occuring (and only once per unwinder).", CACUS_CALLBACK_UNWINDER|CACUS_CALLBACK_EXCEPTION);
 	else
 	{
 		if ( !Unwinder->Prev )
 		{
-			if ( i != (uint32)(Entries.size()-1) ) //Not the last entry
+			if ( i != (uint32)(EntryCount-1) ) //Not the last entry
 			{
-				Entries[i] = Entries.back(); //Correct
-				for ( CUnwinder* Link=Entries[i].List ; Link ; Link=Link->Prev )
+				Entry[i] = Entry[EntryCount-1]; //Correct
+				for ( CUnwinder* Link=Entry[i].List ; Link ; Link=Link->Prev )
 					Link->EnvId = (uint32)i;
 			}
-			Entries.pop_back();
+			EntryCount--;
 		}
 		else
-			Entries[i].List = Unwinder->Prev;
+			Entry[i].List = Unwinder->Prev;
 	}
 }
 
@@ -200,9 +204,9 @@ FORCEINLINE void UnwinderController::LongJump()
 	CUnwinder* CurrentUnwinder = nullptr;
 	{
 		CSpinLock SL(&Lock);
-		for ( size_t i=0 ; i<Entries.size() && !CurrentUnwinder ; i++ )
-			if ( Entries[i].ThreadId == ThreadId )
-				CurrentUnwinder = Entries[i].List;
+		for ( size_t i=0 ; i<EntryCount && !CurrentUnwinder ; i++ )
+			if ( Entry[i].ThreadId == ThreadId )
+				CurrentUnwinder = Entry[i].List;
 	}
 	if ( !CurrentUnwinder )
 	{

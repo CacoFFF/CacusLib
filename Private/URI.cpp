@@ -4,7 +4,6 @@
 #include "StackUnwinder.h"
 #include "DebugCallback.h"
 
-#include "Internal/stringext.h"
 
 //Specialized lightweight helpers
 static void SetText( const char*& Val, const char* NewVal);
@@ -156,55 +155,72 @@ static const char* ParseFragment( const char*& Pos)
 //
 //    RFC 3986 Section 5.2.4
 //
-static void RemoveLastSegment( std::string& Output)
+static void RemoveLastSegment( char* Output)
 {
-	size_t Pos;
-	if ( Output.length() <= 2 )
-		Pos = 0;
-	else
+	if ( Output )
 	{
-		for ( Pos=Output.length()-2 ; Pos>0 && Output[Pos]!='/' ; Pos-- );
+		size_t OutLen = CStrlen( Output);
+		if ( OutLen <= 2 )
+			OutLen = 0;
+		else
+		{
+			while ( (OutLen > 0) && Output[OutLen] != '/' )
+				OutLen--;
+		}
+		Output[OutLen] = '\0';
 	}
-	Output.erase( Pos);
 }
 
 static void RemoveDotSegments( const char*& Path)
 {
 	if ( !Path )
 		return;
-	std::string Input( Path);
-	std::string Output;
-	while ( Input.length() )
+	char* Input = CopyToBuffer( Path);
+	char* Output = nullptr; //Requested on demand
+
+	while ( Input && *Input )
 	{
-		if ( !CStrncmp(Input.c_str(),"./") )
-			Input.erase( 0, _len("./") );
-		else if ( !CStrncmp(Input.c_str(),"../") )
-			Input.erase( 0, _len("../") );
-		else if ( Input == "/." )
-			Input.erase( 1); //Remove dot
-		else if ( !CStrncmp(Input.c_str(),"/./") )
-			Input.erase( 0, _len("/.") ); //Remove one slash and dot
-		else if ( Input == "/.." )
+		if      ( !CStrncmp(Input,"./" ) )
+			Input += _len("./"); //Remove
+		else if ( !CStrncmp(Input,"../") )
+			Input += _len("../"); //Remove
+		else if ( !CStrcmp (Input,"/." ) )
+			Input[1] = '\0'; //Remove dot
+		else if ( !CStrncmp(Input,"/./") )
+			Input += _len("/."); //Remove one slash and dot
+		else if ( !CStrcmp( Input,"/..") )
 		{
-			Input.erase( 1);
+			Input[1] = '\0'; //Remove dots, leave /
 			RemoveLastSegment( Output);
 		}
-		else if ( !CStrncmp(Input.c_str(),"/../") )
+		else if ( !CStrncmp(Input,"/../") )
 		{
-			Input.erase( 0, _len("/..") ); //Remove one slash and two dots
+			Input += _len("/.."); //Remove one slash and two dots
 			RemoveLastSegment( Output);
 		}
-		else if ( Input == "." || Input == ".." )
-			Input.clear();
+		else if ( !CStrcmp(Input,".") || !CStrcmp(Input,"..") )
+			Input[0] = '\0'; //Clear
 		else
 		{
-			size_t i = Input.find('/',1);
-			Output.append( Input.substr(0,i) );
-			Input.erase( 0, i);
+			if ( !Output ) //Setup Output
+			{
+				Output = CharBuffer<char>( CStrlen(Input));
+				Output[0] = '\0';
+			}
+			char* Slash = CStrchr( Input, '/');
+			if ( Slash )
+			{
+				*Slash = '\0'; //Temporarily split in two
+				strcat( Output, Input);
+				*Slash = '/';
+			}
+			else
+				strcat( Output, Input);
+			Input = Slash;
 		}
 	}
 	CFree( (void*)Path);
-	Path = CopyText( Output.c_str(), Output.length() );
+	SetText( Path, Output);
 }
 //========= RemoveDotSegments - begin ==========//
 
@@ -310,53 +326,80 @@ bool URI::operator!=( const URI& rhs)
 //
 // Exports URI as plain text contained in the string buffer 
 //
-const char* URI::operator*() const
+const char* URI::operator*() const //TODO: NOT TESTED
 {
-	std::string Buf;
-	Buf.reserve( 256);
-	if ( scheme && *scheme )
-	{
-		Buf += scheme;
-		Buf += ':';
-	}
+	size_t Len_Scheme   = scheme   ? CStrlen(scheme)   : 0;
+	size_t Len_Auth     = auth     ? CStrlen(auth)     : 0;
+	size_t Len_Hostname = hostname ? CStrlen(hostname) : 0;
+	size_t Len_Port     = 0;
+	for ( uint32 nport=port ; nport>0 ; nport /= 10, Len_Port++);
+	size_t Len_Path     = path     ? CStrlen(path)     : 0;
+	size_t Len_Query    = query    ? CStrlen(query)    : 0;
+	size_t Len_Fragment = fragment ? CStrlen(fragment) : 0;
 
-	if ( *Auth() || *Hostname() )
-		Buf += "//";
+	size_t Len_Extra = (size_t)(Len_Scheme   != 0)
+	                 + (size_t)(Len_Auth + Len_Hostname != 0)
+	                 + (size_t)(Len_Auth     != 0)
+	                 + (size_t)(Len_Port     != 0)
+	                 + (size_t)(Len_Path     != 0)
+	                 + (size_t)(Len_Query    != 0)
+	                 + (size_t)(Len_Fragment != 0)
+	                 + 8; //At least 8 bytes in place of null terminator (just in case)
 
-	if ( auth && *auth )
+	char* Result = CharBuffer<char>( (uint32)(Len_Scheme + Len_Auth + Len_Hostname + Len_Port + Len_Path + Len_Query + Len_Fragment + Len_Extra));
+	if ( Result )
 	{
-		Buf += auth;
-		Buf += '@';
+		Result[0] = 0;
+		size_t Pos = 0;
+		if ( Len_Scheme   )
+		{
+			strcpy( Result + Pos                , scheme  );
+			strcpy( Result + Pos + Len_Scheme   , ":"     );
+			Pos += Len_Scheme + 1;
+		}
+		if ( Len_Auth || Len_Hostname )
+		{
+			strcpy( Result + Pos                , "//"  );
+			Pos += 2;
+		}
+		if ( Len_Auth )
+		{
+			strcpy( Result + Pos                , auth    );
+			strcpy( Result + Pos + Len_Auth     , "@"     );
+			Pos += Len_Auth + 1;
+		}
+		if ( Len_Hostname )
+		{
+			strcpy( Result + Pos                , hostname);
+			Pos += Len_Hostname;
+		}
+		if ( Len_Port )
+		{
+			sprintf( Result + Pos, ":%i"        , (int)port);
+			Pos += Len_Port;
+		}
+		if ( Len_Path )
+		{
+			if ( *path != '/' )
+				strcpy( Result + Pos++          , "/"     );
+			strcpy( Result + Pos                , path    );
+			Pos += Len_Path;
+		}
+		if ( Len_Query )
+		{
+			strcpy( Result + Pos++              , "?"     );
+			strcpy( Result + Pos                , query   );
+			Pos += Len_Query;
+		}
+		if ( Len_Fragment )
+		{
+			strcpy( Result + Pos++              , "#"     );
+			strcpy( Result + Pos                , fragment);
+			Pos += Len_Fragment;
+		}
+		return Result;
 	}
-	if ( hostname  )
-	{
-		Buf += hostname;
-	}
-	if ( port != 0 )
-	{
-		char SPort[8];
-		sprintf( SPort, ":%i", (int)port);
-		Buf += SPort;
-	}
-	if ( path )
-	{
-		if ( *path != '/' )
-			Buf += '/';
-		Buf += path;
-	}
-	if ( query )
-	{
-		Buf += '?';
-		Buf += query;
-	}
-	if ( fragment )
-	{
-		Buf += '#';
-		Buf += fragment;
-	}
-	const char* Result = CopyToBuffer( Buf.c_str() );
-	stringext::SecureCleanup( Buf);
-	return Result;
+	return "";
 }
 //========= URI::operator* - end ==========//
 

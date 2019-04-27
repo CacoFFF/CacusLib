@@ -130,7 +130,7 @@ CProperty::CProperty( const char* InName, CStruct* InParent, int32 InArrayDim, s
 
 //=======================
 // PropertyStdString
-
+#ifdef _STRING_
 bool PropertyStdString::Parse( void* Into, const char* From) const
 {
 	Primitive& Prop = GetProp<Primitive>(Into);
@@ -154,7 +154,7 @@ const char* PropertyStdString::String( void* Object) const
 {
 	return CopyToBuffer( GetProp<Primitive>(Object).c_str() );
 }
-
+#endif
 
 //=======================
 // PropertyC8Text
@@ -340,7 +340,7 @@ void PropertyFixedArray::DestroyValue( void* Object) const
 
 //=======================
 // PropertyMasterObjectArray
-
+#ifdef _VECTOR_
 bool PropertyMasterObjectArray::Booleanize( void* Object) const
 {
 	return GetProp<Primitive>(Object).List.size() > 0;
@@ -351,9 +351,10 @@ void PropertyMasterObjectArray::DestroyValue( void* Object) const
 	GetProp<Primitive>(Object).Empty();
 	GetProp<Primitive>(Object).~TMasterObjectArray();
 }
-
+#endif
 //=======================
 // PropertyStdVectorBase
+
 
 
 //=======================

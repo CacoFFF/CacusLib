@@ -4,6 +4,7 @@
 #include "CacusString.h"
 #include "StackUnwinder.h"
 #include "DebugCallback.h"
+#include "CacusTemplate.h"
 
 int32 volatile COpenThreads = 0;
 

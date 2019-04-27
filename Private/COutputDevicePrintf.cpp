@@ -1,6 +1,6 @@
 
 #include "CacusOutputDevice.h"
-
+#include <wchar.h>
 
 void CPrint8( const char* S)
 {

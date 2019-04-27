@@ -1,6 +1,8 @@
 
+
 #include "Internal/stringext.h"
 
+#ifdef _STRING_
 namespace stringext
 {
 
@@ -37,3 +39,4 @@ namespace stringext
 	}
 
 };
+#endif

@@ -14,11 +14,17 @@ _WINDOWS
 _CRT_SECURE_NO_WARNINGS
 */
 
-#include <vector>
-#include <string>
+#define DISABLE_STDLIB11_FEATURES 0
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#if !DISABLE_STDLIB11_FEATURES
+	#include <vector>
+	#include <string>
+#endif
 
 #ifdef __GNUC__
-	#include <string.h>
 	#include <unistd.h>
 	#define _stricmp strcasecmp
 #endif

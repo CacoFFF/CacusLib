@@ -2,8 +2,7 @@
 
 #include "../CacusPlatform.h"
 
-#include <string>
-
+#ifdef _STRING_
 namespace stringext
 {
 	//Sets all characters to zero before deallocating
@@ -15,3 +14,4 @@ namespace stringext
 	//Single call file loader
 	std::string CACUS_API LoadFile( const char* InFilename);
 };
+#endif

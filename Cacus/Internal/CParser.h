@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef _STRING_
 // Manually parse text using this if the stock code doesn't work for you
 class CStruct;
 class CProperty;
@@ -14,6 +15,7 @@ enum EParserElementFlags
 	PEF_DeltaSame     = 0x0010, //Marked as 'same' by delta check
 	PEF_Root          = 0x0020, //Should not delete
 	PEF_DeltaExport   = 0x0040,
+	PEF_Inner         = 0x0080, //Keep?
 
 	PEF_Inherit       = PEF_DeltaExport,
 };
@@ -96,3 +98,5 @@ public:
 	bool ParseMembers( CParserElement* Parent); //Root line parser
 	bool ParseArray( CParserElement* Container);
 };
+
+#endif

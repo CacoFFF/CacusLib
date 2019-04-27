@@ -1,4 +1,5 @@
-#pragma once
+#ifndef USES_CACUS_OUTPUT
+#define USES_CACUS_OUTPUT
 
 #include "CacusPlatform.h"
 #include "TCharBuffer.h"
@@ -130,3 +131,5 @@ public:
 	void Serialize16( const char16* S)  { CPrint16(S); }
 	void Serialize32( const char32* S)  { CPrint32(S); }
 };
+
+#endif

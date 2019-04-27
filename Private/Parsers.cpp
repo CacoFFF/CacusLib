@@ -11,6 +11,8 @@
 #include "Internal/CParser.h"
 #define JSON_SKIP " \r\n"
 
+#ifdef _STRING_
+
 static CParser* CreateParser( const char* Data, EParseType ParseType)
 {
 	switch (ParseType)
@@ -343,133 +345,6 @@ uint32 CParserElement::RemoveFlaggedTokens( CParserElement** TokenList, int32 Fl
 	return Removed;
 }
 
-//*******************************************************************
-// PROPERTY PARSERS
-
-
-//Helpers - to make life easier
-size_t PropertyStdVectorBase::_CalcVectorSize( const CParserElement& Elem, CParserElement*& Child) const
-{
-	size_t i = 0;
-	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
-		i++;
-	Child = Elem.Children;
-	return i;
-}
-
-void PropertyStdVectorBase::_ImportNextChild( void* Into, CParserElement*& Child) const
-{
-	if ( Child && Into )
-	{
-		Inner->Import( Into, *Child);
-		Child = Child->Next;
-	}
-}
-
-
-//Importers - move data from elements into properties
-void CProperty::Import( void* Into, const CParserElement& Elem) const
-{
-	if ( !Parse( Into, Elem.Value.c_str() ) )
-		Cdebugf("Import failed for element [%s] with value %s", Elem.Key, Elem.Value);
-}
-
-void PropertyFixedArray::Import( void* Into, const CParserElement& Elem) const
-{
-	CFixedArray& Array = GetProp<Primitive>(Into);
-	if ( !Elem.Children )
-	{
-		Array.Setup( 0, 0);
-		return;
-	}
-	Array.Setup( Elem.Children->CountTokens(), Inner->ElementSize);
-	uint8* Address = (uint8*)Array.GetData();
-	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
-	{
-		Inner->Import( Address, *Link);
-		Address += Inner->ElementSize;
-	}
-}
-
-void PropertyMasterObjectArray::Import( void* Into, const CParserElement& Elem) const
-{
-	auto& Array = GetProp<Primitive>(Into);
-	Array.Empty(); //Destruction handled here
-	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
-	{
-		void* NewObject = (*Inner->Model->DefaultCreator)();
-		//TODO: ADD SPECIALIZED CLASS CREATOR
-		Inner->Import( &NewObject, *Link);
-		Array.Add( NewObject);
-	}
-}
-
-void PropertyStruct::Import( void* Into, const CParserElement& Elem) const
-{
-	void* Address = AddressOffset( Into, Offset);
-	Elem.ParseObject( Model, Address);
-}
-
-void PropertyStructPtr::Import( void* Into, const CParserElement& Elem) const
-{
-	void** Address = AddressOffset<void*>( Into, Offset);
-	Elem.ParseObject( Model, *Address);
-}
-
-
-//Exporters - create sub-elements using property data (root element must exist)
-void CProperty::Export( void* From, CParserElement& Elem) const
-{
-	Elem.Key = Name;
-	Elem.Value = String(From);
-	if ( IsText() )
-		Elem.Flags |= PEF_StringQuoted;
-	if ( PropertyFlags & PF_NullDefault )
-		Elem.Flags |= PEF_Null;
-	if ( PropertyFlags & PF_Inner )
-		Elem.Flags |= PEF_Inner;
-}
-
-void PropertyFixedArray::Export( void* From, CParserElement& Elem) const
-{
-	Elem.Flags |= PEF_Array;
-	CFixedArray& Array = GetProp<Primitive>(From);
-	int_p i = (int_p)Array.Size() - 1;
-	uint8* Address = AddressOffset<uint8>( Array.GetData(), (int_p)Inner->ElementSize * i);
-	for ( ; i>=0 ; i-- ) //Backwards loop to keep Array order
-	{
-		CParserElement* Child = new CParserElement( Elem);
-		Inner->Export( Address, *Child);
-		Address -= Inner->ElementSize;
-	}
-}
-
-void PropertyMasterObjectArray::Export( void* From, CParserElement& Elem) const
-{
-	Elem.Flags |= PEF_Array;
-	auto& Array = GetProp<Primitive>(From);
-	CSleepLock(&Array.Lock,0);
-	for ( int_p i=(int_p)Array.List.size() - 1 ; i>=0 ; i-- ) //Backwards loop to keep Array order
-	{
-		CParserElement* Child = new CParserElement( Elem);
-		Inner->Export( &Array.List[i], *Child);
-	}
-}
-
-void PropertyStruct::Export( void* From, CParserElement& Elem) const
-{
-	Elem.Flags |= PEF_Object;
-	void* Address = AddressOffset( From, Offset);
-	Elem.ExportObject( Model, Address);
-}
-
-void PropertyStructPtr::Export( void* From, CParserElement& Elem) const
-{
-	Elem.Flags |= PEF_Object;
-	void** Address = AddressOffset<void*>( From, Offset);
-	Elem.ExportObject( Model, *Address);
-}
-
 
 //*******************************************************************
 // JSON TEXT
@@ -679,3 +554,157 @@ bool CPlainTextFormParser::ParseArray( CParserElement* Container)
 	}
 	return false;
 }
+#endif
+
+//*******************************************************************
+// PROPERTY PARSERS
+
+
+#ifdef _VECTOR_
+//Helpers - to make life easier
+size_t PropertyStdVectorBase::_CalcVectorSize( const CParserElement& Elem, CParserElement*& Child) const
+{
+	size_t i = 0;
+	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
+		i++;
+	Child = Elem.Children;
+	return i;
+}
+
+void PropertyStdVectorBase::_ImportNextChild( void* Into, CParserElement*& Child) const
+{
+	if ( Child && Into )
+	{
+		Inner->Import( Into, *Child);
+		Child = Child->Next;
+	}
+}
+#endif
+
+//Importers - move data from elements into properties
+void CProperty::Import( void* Into, const CParserElement& Elem) const
+{
+#ifdef _STRING_
+	if ( !Parse( Into, Elem.Value.c_str() ) )
+		Cdebugf("Import failed for element [%s] with value %s", Elem.Key, Elem.Value);
+#endif
+}
+
+void PropertyFixedArray::Import( void* Into, const CParserElement& Elem) const
+{
+#ifdef _STRING_
+	CFixedArray& Array = GetProp<Primitive>(Into);
+	if ( !Elem.Children )
+	{
+		Array.Setup( 0, 0);
+		return;
+	}
+	Array.Setup( Elem.Children->CountTokens(), Inner->ElementSize);
+	uint8* Address = (uint8*)Array.GetData();
+	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
+	{
+		Inner->Import( Address, *Link);
+		Address += Inner->ElementSize;
+	}
+#endif
+}
+
+#ifdef _VECTOR_
+void PropertyMasterObjectArray::Import( void* Into, const CParserElement& Elem) const
+{
+#ifdef _STRING_
+	auto& Array = GetProp<Primitive>(Into);
+	Array.Empty(); //Destruction handled here
+	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
+	{
+		void* NewObject = (*Inner->Model->DefaultCreator)();
+		//TODO: ADD SPECIALIZED CLASS CREATOR
+		Inner->Import( &NewObject, *Link);
+		Array.Add( NewObject);
+	}
+#endif
+}
+#endif
+
+void PropertyStruct::Import( void* Into, const CParserElement& Elem) const
+{
+#ifdef _STRING_
+	void* Address = AddressOffset( Into, Offset);
+	Elem.ParseObject( Model, Address);
+#endif
+}
+
+void PropertyStructPtr::Import( void* Into, const CParserElement& Elem) const
+{
+#ifdef _STRING_
+	void** Address = AddressOffset<void*>( Into, Offset);
+	Elem.ParseObject( Model, *Address);
+#endif
+}
+
+
+//Exporters - create sub-elements using property data (root element must exist)
+void CProperty::Export( void* From, CParserElement& Elem) const
+{
+#ifdef _STRING_
+	Elem.Key = Name;
+	Elem.Value = String(From);
+	if ( IsText() )
+		Elem.Flags |= PEF_StringQuoted;
+	if ( PropertyFlags & PF_NullDefault )
+		Elem.Flags |= PEF_Null;
+	if ( PropertyFlags & PF_Inner )
+		Elem.Flags |= PEF_Inner;
+#endif
+}
+
+void PropertyFixedArray::Export( void* From, CParserElement& Elem) const
+{
+#ifdef _STRING_
+	Elem.Flags |= PEF_Array;
+	CFixedArray& Array = GetProp<Primitive>(From);
+	int_p i = (int_p)Array.Size() - 1;
+	uint8* Address = AddressOffset<uint8>( Array.GetData(), (int_p)Inner->ElementSize * i);
+	for ( ; i>=0 ; i-- ) //Backwards loop to keep Array order
+	{
+		CParserElement* Child = new CParserElement( Elem);
+		Inner->Export( Address, *Child);
+		Address -= Inner->ElementSize;
+	}
+#endif
+}
+
+#ifdef _VECTOR_
+void PropertyMasterObjectArray::Export( void* From, CParserElement& Elem) const
+{
+#ifdef _STRING_
+	Elem.Flags |= PEF_Array;
+	auto& Array = GetProp<Primitive>(From);
+	CSleepLock(&Array.Lock,0);
+	for ( int_p i=(int_p)Array.List.size() - 1 ; i>=0 ; i-- ) //Backwards loop to keep Array order
+	{
+		CParserElement* Child = new CParserElement( Elem);
+		Inner->Export( &Array.List[i], *Child);
+	}
+#endif
+}
+#endif
+
+void PropertyStruct::Export( void* From, CParserElement& Elem) const
+{
+#ifdef _STRING_
+	Elem.Flags |= PEF_Object;
+	void* Address = AddressOffset( From, Offset);
+	Elem.ExportObject( Model, Address);
+#endif
+}
+
+void PropertyStructPtr::Export( void* From, CParserElement& Elem) const
+{
+#ifdef _STRING_
+	Elem.Flags |= PEF_Object;
+	void** Address = AddressOffset<void*>( From, Offset);
+	Elem.ExportObject( Model, *Address);
+#endif
+}
+
