@@ -59,6 +59,15 @@ inline __m128i _mm_setzero_si128()
 	return v;
 }
 
+inline __m128 _mm_load1_ps( const float* data)
+{
+	__m128 v;
+	v.m128_f32[0] = data[0];
+	v.m128_f32[1] = data[0];
+	v.m128_f32[2] = data[0];
+	v.m128_f32[3] = data[0];
+	return v;
+}
 
 inline __m128 _mm_loadu_ps( const float* data)
 {
@@ -166,6 +175,16 @@ inline __m128 _mm_div_ps( __m128 A, __m128 B)
 	return v;
 }
 
+inline __m128 _mm_and_ps( __m128 A, __m128 B)
+{
+	__m128 v;
+	v.m128_i32[0] = A.m128_i32[0] & B.m128_i32[0];
+	v.m128_i32[1] = A.m128_i32[1] & B.m128_i32[1];
+	v.m128_i32[2] = A.m128_i32[2] & B.m128_i32[2];
+	v.m128_i32[3] = A.m128_i32[3] & B.m128_i32[3];
+	return v;
+}
+
 inline __m128 _mm_xor_ps( __m128 A, __m128 B)
 {
 	__m128 v;
@@ -174,4 +193,25 @@ inline __m128 _mm_xor_ps( __m128 A, __m128 B)
 	v.m128_i32[2] = A.m128_i32[2] ^ B.m128_i32[2];
 	v.m128_i32[3] = A.m128_i32[3] ^ B.m128_i32[3];
 	return v;
+}
+
+inline __m128 _mm_rcp_ps( __m128 A)
+{
+	A.m128_f32[0] = 1.0f/A.m128_f32[0];
+	A.m128_f32[1] = 1.0f/A.m128_f32[1];
+	A.m128_f32[2] = 1.0f/A.m128_f32[2];
+	A.m128_f32[3] = 1.0f/A.m128_f32[3];
+	return A;
+}
+
+inline __m128 _mm_sqrt_ss( __m128 A)
+{
+	A.m128_f32[0] = sqrt(A.m128_f32[0]);
+	return A;
+}
+
+inline __m128 _mm_rsqrt_ss( __m128 A)
+{
+	A.m128_f32[0] = 1.0f/sqrt(A.m128_f32[0]);
+	return A;
 }

@@ -14,7 +14,7 @@ inline CFVector4::CFVector4( float F)
 inline CFVector4::CFVector4( float InX, float InY, float InZ, float InW)
 	: X(InX), Y(InY), Z(InZ), W(InW)
 {}
-inline CFVector4::CFVector4( float* data)
+inline CFVector4::CFVector4( const float* data)
 {
 	_mm_storeu_ps( &X, _mm_loadu_ps(data)); 
 }
@@ -35,35 +35,21 @@ inline CFVector4& CFVector4::operator=( const CFVector4& Other)
 }
 
 inline CFVector4 CFVector4::operator+( const CFVector4& Other) const
-{	return CFVector4( _mm_add_ps( *this, Other));	}
+{	return _mm_add_ps( *this, Other);	}
 inline CFVector4 CFVector4::operator-( const CFVector4& Other) const
-{	return CFVector4( _mm_sub_ps( *this, Other));	}
+{	return _mm_sub_ps( *this, Other);	}
 inline CFVector4 CFVector4::operator*( const CFVector4& Other) const
-{	return CFVector4( _mm_mul_ps( *this, Other));	}
+{	return _mm_mul_ps( *this, Other);	}
 inline CFVector4 CFVector4::operator/( const CFVector4& Other) const
-{	return CFVector4( _mm_div_ps( *this, Other));	}
+{	return _mm_div_ps( *this, Other);	}
 
 inline float CFVector4::operator|( const CFVector4& Other) const
-{
-	float DotProduct;
-#ifdef CACUS_USES_INTRINSICS
-	__m128 v = _mm_mul_ps(*this,Other);
-	__m128 w = _mm_pshufd_ps( v, 0b10110001); //x,y,z,w >> y,x,w,z
-	v = _mm_add_ps( v, w); // x+y,-,z+w,-
-	w = _mm_pshufd_ps( v, 0b00000010); // >> z+w,-,-,-
-	_mm_store_ss( &DotProduct, _mm_add_ss(v,w));
-#else
-	DotProduct = X*Other.X + Y*Other.Y + Z*Other.Z + W*Other.W;
-#endif
-	return DotProduct;
-}
+{	return _Dot(Other)._X();	}
 
 inline CFVector4 CFVector4::operator*(float F) const
 {	return *this * CFVector4(F);	}
 inline CFVector4 CFVector4::operator/(float F) const
 {	return *this / CFVector4(F);	}
-
-
 
 inline CFVector4 CFVector4::operator+=( const CFVector4& Other)
 {	return (*this = *this + Other);	}
@@ -130,6 +116,11 @@ inline CFVector4 CFVector4::Reciprocal_Approx() const
 	return CFVector4(Rcp); //~= 1/x to 0.000012%
 }
 
+inline CFVector4 CFVector4::Normal_Approx() const
+{
+	return *this * _mm_rsqrt_ss( _Dot(*this));
+}
+
 inline CIVector4 CFVector4::Truncate() const
 {
 	return CIVector4( _mm_cvttps_epi32( *this ));
@@ -137,8 +128,46 @@ inline CIVector4 CFVector4::Truncate() const
 
 inline float CFVector4::Magnitude() const
 {
-	float M;
-	float Dot = *this | *this;
-	_mm_store_ss( &M, _mm_sqrt_ss( _mm_load_ss(&Dot)));
-	return M;
+	return CFVector4( _mm_sqrt_ss( _Dot(*this)))._X();
+}
+
+inline float CFVector4::SquareMagnitude() const
+{
+	return _Dot(*this)._X();
+}
+
+
+//*****************************
+//Internals
+inline float CFVector4::_X() const
+{
+#ifdef CACUS_USES_INTRINSICS
+	float F;
+	_mm_store_ss( &F, _mm_load_ps(&X));
+	return F;
+#else
+	return X;
+#endif
+}
+
+inline CFVector4 CFVector4::_CoordsSum() const
+{
+	CFVector4 Result;
+#ifdef CACUS_USES_INTRINSICS
+	__m128 v = *this;
+	__m128 w = _mm_shuffle_ps( v, v, 0b10110001); //x,y,z,w >> y,x,w,z
+//	__m128 w = _mm_pshufd_ps( v, 0b10110001); //SSE2!
+	v = _mm_add_ps( v, w); // x+y,-,z+w,-
+	w = _mm_movehl_ps( w, v); // >> z+w,-,-,-
+	w = _mm_add_ss( w, v); // x+y+z+w
+	Result = w;
+#else
+	Result.X = X + Y + Z + W;
+#endif
+	return Result;
+}
+
+inline CFVector4 CFVector4::_Dot( const CFVector4& Other) const
+{
+	return (*this * Other)._CoordsSum();
 }

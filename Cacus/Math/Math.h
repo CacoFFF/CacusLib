@@ -33,7 +33,7 @@ struct CFVector4
 	CFVector4() {}
 	CFVector4( float F);
 	CFVector4( float InX, float InY, float InZ, float InW);
-	CFVector4( float* data);
+	CFVector4( const float* data);
 	CFVector4( EZero);
 	CFVector4( __m128 reg);
 	
@@ -63,12 +63,18 @@ struct CFVector4
 	operator __m128i() const;
 
 	float Magnitude() const;
+	float SquareMagnitude() const;
 	CFVector4 Abs() const;
 	CFVector4 Reciprocal() const;
 	CFVector4 Reciprocal_Approx() const;
+	CFVector4 Normal_Approx() const;
 
 	CIVector4 Truncate() const;
 
+	//Internals
+	float _X() const;
+	CFVector4 _CoordsSum() const;
+	CFVector4 _Dot( const CFVector4& Other) const;
 
 	static CIVector4 MASK_ABSOLUTE;
 	static CIVector4 MASK_SIGNBITS;
@@ -80,7 +86,7 @@ struct CIVector4
 
 	CIVector4() {}
 	CIVector4( int32 In_i, int32 In_j, int32 In_k, int32 In_l);
-	CIVector4( int32* data);
+	CIVector4( const int32* data);
 	CIVector4( EZero);
 	CIVector4( __m128i reg);
 
