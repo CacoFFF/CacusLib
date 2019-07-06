@@ -121,46 +121,19 @@ void FPlatformTime::UtcTime( int32& Year, int32& Month, int32& DayOfWeek, int32&
 #endif
 
 
-char* FPlatformTime::StrDate( char* Dest, uint32 DestSize )
-{
-	int32 Year;
-	int32 Month;
-	int32 DayOfWeek;
-	int32 Day;
-	int32 Hour;
-	int32 Min;
-	int32 Sec;
-	int32 MSec;
-
-	FPlatformTime::SystemTime(Year, Month, DayOfWeek, Day, Hour, Min, Sec, MSec );
-	snprintf( Dest, DestSize, "%02d/%02d/%02d", Day, Month, Year % 100);
-	return Dest;
-}
-
-char* FPlatformTime::StrTime( char* Dest, uint32 DestSize )
-{
-	int32 Year;
-	int32 Month;
-	int32 DayOfWeek;
-	int32 Day;
-	int32 Hour;
-	int32 Min;
-	int32 Sec;
-	int32 MSec;
-
-	FPlatformTime::SystemTime(Year, Month, DayOfWeek, Day, Hour, Min, Sec, MSec );
-	snprintf( Dest, DestSize, "%02d:%02d:%02d", Hour, Min, Sec);
-	return Dest;
-}
-
 const char* FPlatformTime::StrTimestamp()
 {
-	static TChar8Buffer<1024> Result;
-	Result[0] = 0;
-	StrDate( *Result, Result.Size() );
-	strcat( *Result, " " );
-	StrTime( *Result + Result.Len(), Result.Size() - Result.Len() );
-	return *Result;
+	int32 Year;
+	int32 Month;
+	int32 DayOfWeek;
+	int32 Day;
+	int32 Hour;
+	int32 Min;
+	int32 Sec;
+	int32 MSec;
+
+	FPlatformTime::SystemTime(Year, Month, DayOfWeek, Day, Hour, Min, Sec, MSec );
+	return CSprintf( "%02d/%02d/%02d %02d:%02d:%02d", Day, Month, Year%100, Hour, Min, Sec);
 }
 
 /**
@@ -171,7 +144,7 @@ const char* FPlatformTime::StrTimestamp()
 TChar8Buffer<32> FPlatformTime::PrettyTime( double Seconds )
 {
 	TChar8Buffer<32> Result;
-	/*	if ( Seconds < 1.0 )
+/*	if ( Seconds < 1.0 )
 	{
 	return FString::Printf( TEXT("%d ms"), FMath::TruncToInt(Seconds*1000) );
 	}

@@ -272,7 +272,11 @@ char* VARARGS CSprintf( const char* fmt, ...)
 
 	va_start(args, fmt);
 	va_copy(args2,args);
+#ifdef _WINDOWS
+	int Length = _vscprintf( fmt, args2); //vsnprintf was implemented in UCRT!! (2015)
+#else
 	int Length = vsnprintf( nullptr, 0, fmt, args2); 
+#endif
 	va_end(args2);
 
 	char* Result = (char*)U"";
@@ -295,7 +299,11 @@ wchar_t* VARARGS CWSprintf( const wchar_t* fmt, ...)
 
 	va_start(args, fmt);
 	va_copy(args2,args);
+#ifdef _WINDOWS
+	int Length = _vscwprintf( fmt, args2); //vsnprintf was implemented in UCRT!! (2015)
+#else
 	int Length = vswprintf( nullptr, 0, fmt, args2); 
+#endif
 	va_end(args2);
 
 	wchar_t* Result = (wchar_t*)U"";

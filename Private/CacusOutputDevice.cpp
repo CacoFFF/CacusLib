@@ -1,6 +1,4 @@
 
-#include <string>
-#include <vector>
 #include "CacusTemplate.h"
 #include "CacusGlobals.h"
 #include "CacusString.h"
@@ -8,34 +6,12 @@
 #include "AppTime.h"
 #include "Atomics.h"
 
-
-
-
-COutputDevice* ConstructOutputDevice( COutputType Type)
-{
-	switch (Type)
-	{
-	case COUT_Null:
-		return new COutputDeviceNull();
-	case COUT_Printf:
-		return new COutputDevicePrintf();
-	case COUT_File_UTF8:
-		return new COutputDeviceFileUTF8();
-	default:
-		return nullptr;
-	}
-}
-
-void DestructOutputDevice( COutputDevice* Device)
-{
-	if ( Device )
-		delete Device;
-}
-
+#include <stdio.h>
 
 //***********************************************
 // COutputDeviceList
 
+#ifdef _VECTOR_
 COutputDeviceList CLog;
 
 void COutputDeviceList::Init( const char* LocalFilename)
@@ -68,6 +44,7 @@ COutputDeviceList& COutputDeviceList::operator<<(int32 I)
 	sprintf( *Buffer, "%i", I);
 	return (*this) << *Buffer;
 }
+#endif
 
 //***********************************************
 // COutputDeviceFile
@@ -114,11 +91,11 @@ void COutputDeviceFile::Open( uint32 AltFilenameAttempts)
 	//Allocate large enough buffer
 	char* FinalFilename = (char*)CMalloc( CStrlen(FilenamePart) + CStrlen(ExtensionPart) + 10);
 	sprintf( FinalFilename, "%s%s", FilenamePart, ExtensionPart);
-	FilePtr = std::fopen( FinalFilename, WriteFlags);
+	FilePtr = fopen( FinalFilename, WriteFlags);
 	for ( uint32 i=0 ; !FilePtr && i<AltFilenameAttempts ; i++ ) //Add _2 if necessary
 	{
 		sprintf( FinalFilename, "%s_%i%s", FilenamePart, (int)(i+2), ExtensionPart);
-		FilePtr = std::fopen( FinalFilename, WriteFlags);
+		FilePtr = fopen( FinalFilename, WriteFlags);
 	}
 
 	Dead = (FilePtr == nullptr);
@@ -130,7 +107,7 @@ void COutputDeviceFile::Close()
 	if ( FilePtr )
 	{
 		Flush();
-		std::fclose( (std::FILE*)FilePtr);
+		fclose( (FILE*)FilePtr);
 		FilePtr = nullptr;
 	}
 }
@@ -150,13 +127,19 @@ void COutputDeviceFile::SetFilename( const wchar_t* InFilename)
 void COutputDeviceFile::Flush()
 {
 	if( FilePtr )
-		std::fflush( (std::FILE*)FilePtr);
+		fflush( (FILE*)FilePtr);
 }
 
 
 
 //***********************************************
 // COutputDeviceFileUTF8
+
+COutputDeviceFileUTF8::COutputDeviceFileUTF8( const char* InFilename)
+	: COutputDeviceFile(InFilename)
+{
+}
+
 
 static const uint8 UTF8_BOM[3] = { 0xEF, 0xBB, 0xBF }; 
 bool COutputDeviceFileUTF8::Init()
@@ -165,7 +148,7 @@ bool COutputDeviceFileUTF8::Init()
 	{
 		Open(32);
 		if ( FilePtr )
-			std::fwrite( UTF8_BOM, 1, 3, (std::FILE*)FilePtr);
+			fwrite( UTF8_BOM, 1, 3, (FILE*)FilePtr);
 	}
 	return FilePtr != nullptr;
 }
@@ -175,9 +158,9 @@ void COutputDeviceFileUTF8::Write( const char* UTF8Stream)
 	if ( UTF8Stream && *UTF8Stream )
 	{
 		if ( *UTF8Stream == '\n' ) //Hack: write the carriage return if missing
-			std::fwrite( "\r", 1, 1, (std::FILE*)FilePtr);
+			fwrite( "\r", 1, 1, (FILE*)FilePtr);
 		size_t len = CStrlen(UTF8Stream);
-		std::fwrite( UTF8Stream, 1, len, (std::FILE*)FilePtr);
+		fwrite( UTF8Stream, 1, len, (FILE*)FilePtr);
 	}
 }
 

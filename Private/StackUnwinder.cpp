@@ -215,3 +215,43 @@ FORCEINLINE void UnwinderController::LongJump()
 	}
 	longjmp( CurrentUnwinder->Environment, 1);
 }
+
+
+//***************************************************************
+//******* Stack unwinder globals
+//***************************************************************
+
+//
+// Unwind the stack.
+//
+void CUnwindf( const char* Msg )
+{
+	CCriticalError( nullptr);
+	DebugCallback( Msg, CACUS_CALLBACK_THREAD);
+}
+
+//
+// Critical error
+//
+static int LastCriticalError = INDEX_NONE;
+void CCriticalError( const char* Error)
+{
+	int ThreadId = GET_THREAD_ID();
+	if( LastCriticalError != ThreadId )
+	{
+		LastCriticalError = ThreadId;
+		char Buffer[512];
+		sprintf( Buffer, "\r\n=== Critical Error in thread %i ===", ThreadId);
+		DebugCallback( Buffer, CACUS_CALLBACK_THREAD);
+		if ( Error )
+			DebugCallback( Error, CACUS_CALLBACK_THREAD);
+		DebugCallback( "== History:", CACUS_CALLBACK_THREAD | CACUS_CALLBACK_EXCEPTION);
+	}
+}
+
+void CFailAssert( const char* Error, const char* File, int32 Line)
+{
+	char Buffer[512];
+	sprintf( Buffer, "Assertion failed: [%s] at %s line %i", Error, File, Line);
+	CCriticalError( Buffer);
+}

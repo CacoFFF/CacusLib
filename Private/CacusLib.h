@@ -14,7 +14,9 @@ _WINDOWS
 _CRT_SECURE_NO_WARNINGS
 */
 
-#define DISABLE_STDLIB11_FEATURES 0
+#ifndef DISABLE_STDLIB11_FEATURES
+	#define DISABLE_STDLIB11_FEATURES 0
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

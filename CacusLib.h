@@ -60,10 +60,12 @@ _CRT_SECURE_NO_WARNINGS
 //          Using with: Unreal Engine (old)
 #ifdef _INC_CORE
 #ifdef CORE_API
-	#define uint8 BYTE
+	#define uint8  BYTE
 	#define uint16 _WORD
 	#define uint32 DWORD
 	#define uint64 QWORD
+	#define int8  SBYTE
+	#define int16 SWORD
 	#define int32 INT
 	#define int64 SQWORD
 	#define CACUSLIB_TYPES

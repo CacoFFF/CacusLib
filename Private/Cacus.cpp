@@ -1,49 +1,16 @@
 
-#include "CacusGlobals.h"
-#include "CacusOutputDevice.h"
 #include "CacusString.h"
-#include "StackUnwinder.h"
 #include "DebugCallback.h"
 #include "CacusTemplate.h"
 
 int32 volatile COpenThreads = 0;
 
+#ifdef CACUS_OLD_CRT
+	#include "../OldCRT/API_MSC.h"
+#endif
 
-//
-// Unwind the stack.
-//
-void CUnwindf( const char* Msg )
-{
-	CCriticalError( nullptr);
 
-/*	static int32 Count=0;
-	if( Count++ )
-		strncat( GErrorHist, TEXT(" <- "), ARRAY_COUNT(GErrorHist) );
-	strncat( GErrorHist, Msg, ARRAY_COUNT(GErrorHist) );*/
 
-	DebugCallback( Msg, CACUS_CALLBACK_THREAD);
-}
-
-void CCriticalError( const char* Error)
-{
-	thread_local int CriticalError = 0;
-	if( !CriticalError++ )
-	{
-		DebugCallback("\r\n=== Critical Error ===", CACUS_CALLBACK_THREAD);
-		if ( Error )
-			DebugCallback( Error, CACUS_CALLBACK_THREAD);
-		DebugCallback( "== History:", CACUS_CALLBACK_THREAD | CACUS_CALLBACK_EXCEPTION);
-		if ( Error ) //Not called from Unwindf
-			throw 1;
-	}
-}
-
-void CFailAssert( const char* Error, const char* File, int32 Line)
-{
-	char Buffer[512];
-	sprintf( Buffer, "Assertion failed: [%s] at %s line %i", Error, File, Line);
-	CCriticalError( Buffer);
-}
 
 void CFixedArray::Setup( uint32 NewNum, size_t ElementSize)
 {

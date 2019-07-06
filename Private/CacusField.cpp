@@ -3,25 +3,18 @@
 #include "TimeStamp.h"
 #include "StackUnwinder.h"
 
-#include <map>
 
+static CStruct* StructList = nullptr;
+static volatile int32 StructListLock = 0;
 
-// Struct list
-struct cmp_str
-{
-	bool operator()(char const *a, char const *b) const
-	{
-		return strcmp(a, b) < 0; //Use CStrcmp
-	}
-};
-std::map<const char*,CStruct*,cmp_str> StructMap;
 
 CStruct* GetStruct( const char* StructName)
 {
-	auto Entry = StructMap.find( StructName);
-	return (Entry != StructMap.end()) ? Entry->second : nullptr;
+	for ( CField* Link=StructList ; Link ; Link=Link->Next )
+		if ( CStrcmp( Link->Name, StructName) )
+			return (CStruct*)Link;
+	return nullptr;
 }
-
 
 
 
@@ -55,7 +48,9 @@ CStruct::CStruct( const char* InName, CStruct* InSuper, STRUCT_CREATOR InDefault
 	, DestructorLink(nullptr)
 	, DefaultObject( (*InDefaultCreator)() )
 {
-	StructMap.emplace( InName, this);
+	CSpinLock SL( &StructListLock);
+	Next = StructList;
+	StructList = (CStruct*)Next;
 }
 
 CField* CStruct::FindField( const char* FieldName) const
@@ -73,7 +68,6 @@ CField* CStruct::FindField( const char* FieldName) const
 
 CProperty* CStruct::FindProperty( const char* PropertyName) const
 {
-	guard(CStruct::FindProperty);
 	if ( PropertyName )
 	{
 		if ( !PropertyName[0] ) //Find a default property instead
@@ -85,7 +79,6 @@ CProperty* CStruct::FindProperty( const char* PropertyName) const
 			return SuperStruct->FindProperty( PropertyName);
 	}
 	return nullptr;
-	unguard;
 }
 
 void CStruct::DestroyProperties( void* Object)
