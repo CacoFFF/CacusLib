@@ -20,21 +20,6 @@ public:
 	}
 };
 
-enum COutputType
-{
-	COUT_Null,
-	COUT_Printf,
-	COUT_File_ANSI,
-	COUT_File_UTF8
-};
-
-extern "C"
-{
-	//If you want to avoid C++ linkage
-	CACUS_API COutputDevice* ConstructOutputDevice( COutputType Type);
-	CACUS_API void           DestructOutputDevice( COutputDevice* Device);
-};
-
 
 #ifdef _VECTOR_
 
@@ -94,7 +79,7 @@ public:
 class CACUS_API COutputDeviceFileUTF8 : public COutputDeviceFile
 {
 public:
-	COutputDeviceFileUTF8( const char* InFilename = nullptr) : COutputDeviceFile(InFilename) {}
+	COutputDeviceFileUTF8( const char* InFilename = nullptr);
 
 	void Serialize8 ( const char* Data);
 	void Serialize16( const char16* Data);

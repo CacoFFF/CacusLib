@@ -14,6 +14,7 @@ SRCS = BaseDir.cpp	\
 	DebugCallback.cpp	\
 	Thread.cpp	\
 	Time.cpp	\
+	Ticker.cpp	\
 	CacusField.cpp	\
 	COutputDevicePrintf.cpp	\
 	Parsers.cpp	\

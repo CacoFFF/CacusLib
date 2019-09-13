@@ -1,4 +1,3 @@
-#include "Math.h"
 /*=============================================================================
 	CIVector4.h
 	Author: Fernando Velázquez
@@ -80,4 +79,9 @@ inline CIVector4::operator __m128() const
 inline CIVector4::operator __m128i() const
 {
 	return _mm_loadu_si128( (__m128i*)&i);
+}
+
+inline int CIVector4::MSB_Mask() const
+{
+	return CFVector4( __m128()).MSB_Mask();
 }

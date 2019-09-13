@@ -72,6 +72,9 @@
     <ClCompile Include="Private\CacusMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Private\Ticker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cacus\AppTime.h">
@@ -143,13 +146,13 @@
     <ClInclude Include="Cacus\Math\CFVector4.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Cacus\Math\NoIntrinsics.h">
-      <Filter>Header Files\Math</Filter>
-    </ClInclude>
     <ClInclude Include="Cacus\Math\CIVector4.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
     <ClInclude Include="Cacus\Math\Constants.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Cacus\Math\CIVector2.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
   </ItemGroup>

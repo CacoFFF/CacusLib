@@ -2,6 +2,7 @@
 
 #include "CacusPlatform.h"
 #include "CacusTemplate.h"
+#include "DebugCallback.h"
 #include "Atomics.h"
 
 //Tags
@@ -62,7 +63,11 @@ public:
 		if ( Amount >= BufferSize ) //Using >= instead of > in case base data buffer needs alignment too
 		{
 			if ( bThrow )
-				throw "TCircularBuffer cannot be requested more than its Size";
+			{
+				char Buffer[96];
+				sprintf( Buffer, "TCircularBuffer: Requested [%i/%i] bytes", (int)Amount, (int)BufferSize);
+				DebugCallback( Buffer, CACUS_CALLBACK_MEMORY|CACUS_CALLBACK_EXCEPTION);
+			}
 			return nullptr;
 		}
 

@@ -194,15 +194,15 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;CACUS_OLD_CRT;DISABLE_STDLIB11_FEATURES;_NO_CRT_STDIO_INLINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;DISABLE_STDLIB11_FEATURES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>D:\Dev\CacusLib\Cacus;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>true</BrowseInformation>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalOptions>/Zc:threadSafeInit- /Zc:sizedDealloc- %(AdditionalOptions)</AdditionalOptions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -210,7 +210,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -265,6 +265,7 @@
     <ClCompile Include="Private\StackUnwinder.cpp" />
     <ClCompile Include="Private\STL_String.cpp" />
     <ClCompile Include="Private\Thread.cpp" />
+    <ClCompile Include="Private\Ticker.cpp" />
     <ClCompile Include="Private\Time.cpp" />
     <ClCompile Include="Private\Unicode.cpp" />
     <ClCompile Include="Private\UnitTests.cpp" />
@@ -286,10 +287,10 @@
     <ClInclude Include="Cacus\Internal\fileext.h" />
     <ClInclude Include="Cacus\Internal\stringext.h" />
     <ClInclude Include="Cacus\Math\CFVector4.h" />
+    <ClInclude Include="Cacus\Math\CIVector2.h" />
     <ClInclude Include="Cacus\Math\CIVector4.h" />
     <ClInclude Include="Cacus\Math\Constants.h" />
     <ClInclude Include="Cacus\Math\Math.h" />
-    <ClInclude Include="Cacus\Math\NoIntrinsics.h" />
     <ClInclude Include="Cacus\StackUnwinder.h" />
     <ClInclude Include="Cacus\TCharBuffer.h" />
     <ClInclude Include="Cacus\TimeStamp.h" />
