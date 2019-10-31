@@ -33,7 +33,7 @@
 
 #ifdef _WINDOWS
 	#define MIN_GRANULARITY MSEC(1.0)
-#elif __LINUX_X86__
+#else
 	#define MIN_GRANULARITY MSEC(1.0) //FIX
 #endif
 
@@ -51,7 +51,7 @@ void CTickerEngine::NativeSleep( double Time)
 		SleepTime = 1;
 	Sleep( SleepTime);
 #elif __GNUC__
-	useconds_t SleepTime = appFloor( Time * 1000000.0);
+	useconds_t SleepTime = (int32)( Time * 1000000.0);
 	if ( SleepTime <= 0 )
 		SleepTime = 1;
 	usleep( SleepTime);
@@ -115,7 +115,7 @@ void CTickerEngine::UpdateTimerResolution()
 	Cur = 0;
 	NtQueryTimerResolution( &Min, &Max, &Cur);
 	SleepResolution = (double)Cur / 10000000.0;
-#elif __LINUX_X86__
+#else
 	// See https://cyberglory.wordpress.com/2011/08/21/jiffies-in-linux-kernel/
 #endif
 

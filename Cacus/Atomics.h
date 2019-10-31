@@ -195,20 +195,20 @@ class CSleepLock
 	CSleepLock() {} //No default constructor
 
 public:	
-	CSleepLock( volatile int32* InLock, uint32 InSleep=0)
+	FORCEINLINE CSleepLock( volatile int32* InLock, uint32 InSleep=0)
 	:	Lock(InLock)
 	,	SleepInterval(InSleep)
 	{
-		while ( FPlatformAtomics::InterlockedIncrement(Lock) != 1 )
+		do
 		{
-			FPlatformAtomics::InterlockedDecrement(Lock);
-			Sleep(SleepInterval);
-		}
+			while ( *Lock)
+				Sleep(SleepInterval); //Additional TEST operation before WRITE prevents scalability issues
+		} while ( FPlatformAtomics::InterlockedCompareExchange(Lock, 1, 0) );
 	}
 	
-	~CSleepLock()
+	FORCEINLINE ~CSleepLock()
 	{
-		FPlatformAtomics::InterlockedDecrement(Lock);
+		FPlatformAtomics::InterlockedExchange( Lock, 0);
 	}
 };
 

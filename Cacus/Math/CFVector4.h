@@ -20,11 +20,11 @@ inline CFVector4::CFVector4( float InX, float InY, float InZ, float InW)
 {}
 inline CFVector4::CFVector4( const float* data)
 {
-	_mm_storeu_ps( &X, _mm_and_ps( _mm_loadu_ps(data), CIVector4::MASK_3D) ); 
+	_mm_storeu_ps( &X, _mm_loadu_ps(data)); 
 }
 inline CFVector4::CFVector4( const float* data, E3D)
 {
-	_mm_storeu_ps( &X, _mm_loadu_ps(data)); 
+	_mm_storeu_ps( &X, _mm_and_ps( _mm_loadu_ps(data), CIVector4::MASK_3D) ); 
 }
 inline CFVector4::CFVector4( EZero)
 {

@@ -11,7 +11,7 @@
 //Types are all 32 bits
 
 #ifdef _WINDOWS
-	#define ENTRY_TYPE unsigned long __stdcall
+	#define ENTRY_TYPE uint32 __stdcall
 #elif __GNUC__
 	#include <sys/types.h>
 	#define ENTRY_TYPE void*
@@ -37,15 +37,15 @@ enum EThreadFlags
 //////////////////////////////////////////
 // Generic thread (Cacus)
 // Non-templated, so entry point needs to be defined using THREAD_ENTRY
-// A lambda expression can be used as well: [](void* Arg){ ... return THREAD_END_OK; }
+// A lambda expression can be used as well: [](void* Arg, CThread* Handler){ ... return THREAD_END_OK; }
 //////////////////////////////////////////
 struct CACUS_API CThread
 {
-	typedef uint32 (*ENTRY_POINT)(void*);
+	typedef uint32 (*ENTRY_POINT)(void*,CThread*);
 private:
 	volatile int32 Lock;
 	volatile int32 DestructLock;
-	volatile unsigned long tId;
+	volatile uint32 tId;
 	CThread* volatile* volatile ThreadHandlerPtr; // *ThreadHandlerPtr == this
 public:
 	uint32 RepeatInterval;
@@ -63,7 +63,7 @@ public:
 	int WaitFinish( float MaxWait=0);
 
 	bool IsEnded() { return tId == 0; }
-	unsigned long ThreadId() { return tId; }
+	uint32 ThreadId() { return tId; }
 private:
 	static ENTRY_TYPE CThreadEntryContainer( void* Arg);
 };

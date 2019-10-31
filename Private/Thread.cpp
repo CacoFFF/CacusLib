@@ -57,9 +57,7 @@ ENTRY_TYPE CThread::CThreadEntryContainer( void* Arg)
 		{
 			while ( EntryPoint )
 			{
-				guard(CThread_Entry);
-				Result = (EntryPoint)(EntryArg);
-				unguard;
+				Result = (EntryPoint)(EntryArg,Thread);
 
 				if ( Result == THREAD_END_LOOP )
 					{}
