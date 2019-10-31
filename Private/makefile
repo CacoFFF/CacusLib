@@ -1,9 +1,11 @@
 CXX = g++
 
+SONAME = Cacus.so
+
 OTHERSTUFF = -Wl
 CXXFLAGS = -std=gnu++11 -msse2 -m32 -fpermissive -fno-strict-aliasing -O2 -Wall -fvisibility=hidden -I. -I../Cacus
-LDFLAGS = -shared -m32 -rdynamic -lc -ldl -lpthread -Wl,-z,defs
-OUTPUT = Cacus.so
+LDFLAGS = -shared -m32 -rdynamic -lc -ldl -lpthread -Wl,-z,defs -Wl,-soname,$(SONAME)
+OUTPUT = $(SONAME)
 LIBS = 
 
 SRCS = BaseDir.cpp	\

@@ -97,15 +97,19 @@
 
 //Operating system dependant
 #ifdef _WINDOWS
-	#define FORCEINLINE __forceinline
+	#ifndef FORCEINLINE
+		#define FORCEINLINE __forceinline
+	#endif
 	#define VARARGS __cdecl
 	#define CDECL __cdecl
 	#define STDCALL __stdcall
 #elif __GNUC__
-	#if __GNUC__ >= 3
-		#define FORCEINLINE __attribute__((always_inline)) inline
-	#else
-		#define FORCEINLINE inline
+	#ifndef FORCEINLINE
+		#if __GNUC__ >= 3
+			#define FORCEINLINE __attribute__((always_inline)) inline
+		#else
+			#define FORCEINLINE inline
+		#endif
 	#endif
 	#define VARARGS
 	#define CDECL
