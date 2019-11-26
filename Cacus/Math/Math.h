@@ -3,6 +3,7 @@
 	Author: Fernando Velázquez
 
 	General vector math header.
+	This header is public domain.
 =============================================================================*/
 
 #ifndef USES_CACUS_MATH
@@ -33,6 +34,7 @@
 enum E3D         { E_3D = 0 };
 enum EZero       { E_Zero = 0};
 enum EX          { E_X = 0};
+enum EXYXY       { E_XYXY = 0};
 
 struct CFVector4;
 struct CIVector2;
@@ -49,6 +51,7 @@ struct CFVector4
 	CFVector4( float InX, float InY, float InZ, float InW);
 	CFVector4( const float* data);
 	CFVector4( const float* data, E3D);
+	CFVector4( const float* data, EXYXY);
 	CFVector4( EZero);
 	CFVector4( __m128 reg);
 	
@@ -82,11 +85,12 @@ struct CFVector4
 	float SquareMagnitude() const;
 	CFVector4 Abs() const;
 	CFVector4 Reciprocal() const;
+	CFVector4 Reciprocal_Fast() const;
 	CFVector4 Reciprocal_Approx() const;
 	CFVector4 Normal_Approx() const;
 
-	CIVector4 Truncate_SSE() const;
-	CIVector4 Truncate() const;
+	CIVector4 Int_SSE() const;
+	CIVector4 Int() const;
 	int MSB_Mask() const;
 
 	//Global methods
@@ -120,6 +124,7 @@ struct CIVector4
 	CIVector4() {}
 	CIVector4( int32 In_i, int32 In_j, int32 In_k, int32 In_l);
 	CIVector4( const int32* data);
+	CIVector4( const int32* data, EXYXY);
 	CIVector4( EZero);
 	CIVector4( __m128i reg);
 
@@ -137,6 +142,7 @@ struct CIVector4
 	operator __m128() const;
 	operator __m128i() const;
 
+	CFVector4 Float() const;
 	int MSB_Mask() const;
 
 	static CIVector4 MASK_3D;

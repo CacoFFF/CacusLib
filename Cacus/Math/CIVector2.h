@@ -3,6 +3,7 @@
 	Author: Fernando Velázquez
 
 	Main CFVector2 implementation.
+	This header is public domain.
 =============================================================================*/
 
 

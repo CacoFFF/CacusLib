@@ -1,9 +1,9 @@
-#include "Math.h"
 /*=============================================================================
 	CFVector4.h
 	Author: Fernando Velázquez
 
 	Main CFVector4 implementation.
+	This header is public domain.
 =============================================================================*/
 
 
@@ -25,6 +25,11 @@ inline CFVector4::CFVector4( const float* data)
 inline CFVector4::CFVector4( const float* data, E3D)
 {
 	_mm_storeu_ps( &X, _mm_and_ps( _mm_loadu_ps(data), CIVector4::MASK_3D) ); 
+}
+inline CFVector4::CFVector4( const float* data, EXYXY)
+{
+	__m128 xy = _mm_loadl_pi( _mm_setzero_ps(), (__m64*)data);
+	_mm_storeu_ps( &X, _mm_movelh_ps( xy, xy));
 }
 inline CFVector4::CFVector4( EZero)
 {
@@ -108,6 +113,11 @@ inline CFVector4 CFVector4::Reciprocal() const
 	return CFVector4(1.f) / *this;
 }
 
+inline CFVector4 CFVector4::Reciprocal_Fast() const
+{
+	return _mm_rcp_ps( *this); //z = 1/x estimate
+}
+
 inline CFVector4 CFVector4::Reciprocal_Approx() const
 {
 	__m128 z = _mm_rcp_ps( *this); //z = 1/x estimate
@@ -120,7 +130,7 @@ inline CFVector4 CFVector4::Normal_Approx() const
 	return *this * _mm_rsqrt_ss( _Dot(*this));
 }
 
-inline CIVector4 CFVector4::Truncate_SSE() const
+inline CIVector4 CFVector4::Int_SSE() const
 {
 	__m128 tmp = *this;
 	__m64 low = _mm_cvtt_ps2pi( tmp);
@@ -130,7 +140,7 @@ inline CIVector4 CFVector4::Truncate_SSE() const
 	return _mm_castps_si128( tmp);
 }
 
-inline CIVector4 CFVector4::Truncate() const
+inline CIVector4 CFVector4::Int() const
 {
 	return _mm_cvttps_epi32( *this );
 }
