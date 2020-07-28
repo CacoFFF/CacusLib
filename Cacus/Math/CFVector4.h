@@ -130,16 +130,6 @@ inline CFVector4 CFVector4::Normal_Approx() const
 	return *this * _mm_rsqrt_ss( _Dot(*this));
 }
 
-inline CIVector4 CFVector4::Int_SSE() const
-{
-	__m128 tmp = *this;
-	__m64 low = _mm_cvtt_ps2pi( tmp);
-	__m64 high = _mm_cvtt_ps2pi( _mm_movehl_ps( tmp, tmp));
-	tmp = _mm_loadl_pi( tmp, &low);
-	tmp = _mm_loadh_pi( tmp, &high);
-	return _mm_castps_si128( tmp);
-}
-
 inline CIVector4 CFVector4::Int() const
 {
 	return _mm_cvttps_epi32( *this );

@@ -237,7 +237,7 @@ public:
 		return true; //STL isn't exactly helping here
 	}
 
-	uint32 Add( T Elem)
+	size_t Add( T Elem)
 	{
 		CSleepLock SL( &Lock);
 		for ( uint32 i=0 ; i<List.size() ; i++ )

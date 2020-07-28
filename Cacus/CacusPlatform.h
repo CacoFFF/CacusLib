@@ -40,8 +40,7 @@
 	typedef signed long long	int64;		// 64-bit signed.
 	#define CACUSLIB_TYPES
 
-	#ifdef __WIN64
-	//	typedef uint64 size_t;
+	#ifdef _M_X64
 		typedef int64 int_p;
 	#elif __LP64__
 		typedef uint64 size_t;
@@ -56,10 +55,10 @@ static_assert( sizeof(uint8)  == 1, "Bad uint8 size");
 static_assert( sizeof(uint16) == 2, "Bad uint16 size");
 static_assert( sizeof(uint32) == 4, "Bad uint32 size");
 static_assert( sizeof(uint64) == 8, "Bad uint64 size");
-static_assert( sizeof(int8)  == 1, "Bad int8 size");
-static_assert( sizeof(int16) == 2, "Bad int16 size");
-static_assert( sizeof(int32) == 4, "Bad int32 size");
-static_assert( sizeof(int64) == 8, "Bad int64 size");
+static_assert( sizeof(int8)   == 1, "Bad int8 size");
+static_assert( sizeof(int16)  == 2, "Bad int16 size");
+static_assert( sizeof(int32)  == 4, "Bad int32 size");
+static_assert( sizeof(int64)  == 8, "Bad int64 size");
 
 
 #ifndef CACUSLIB_ENUMS

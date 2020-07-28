@@ -51,14 +51,6 @@ public:
 };
 
 
-
-
-
-inline CTickerEngine::CTickerEngine()
-{
-	memset(this,0,sizeof(*this));
-}
-
 inline double CTickerEngine::GetSleepResolution() const
 {
 	return SleepResolution;

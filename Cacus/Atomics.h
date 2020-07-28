@@ -16,49 +16,6 @@ FORCEINLINE void Sleep( uint32 MilliSeconds )
 	usleep( MilliSeconds * 1000 );
 }
 
-//GCC 2.95 doesn't have these atomic functions, so i must define them
-#if __GNUC__ < 3
-inline int32 __sync_fetch_and_add(volatile int32* p, int32 incr)
-{
-	int32 result;
-	__asm__ __volatile__ ("lock; xadd %0, %1" :
-			"=r"(result), "=m"(*p):
-			"0"(incr), "m"(*p) :
-			"memory");
-	return result;
-}
-
-inline int32 __sync_fetch_and_sub( volatile int32* p, int32 decr)
-{
-    int32 result;
-    __asm__ __volatile__ ("lock; xadd %0, %1"
-            :"=r"(result), "=m"(*p)
-            :"0"(-decr), "m"(*p)
-            :"memory");
-    return result;
-}
-
-inline int32 __sync_lock_test_and_set( volatile int32* p, int32 exch)
-{
-    __asm__ __volatile__ ("lock; xchgl %0, %1"
-                 : "=r"(exch), "=m"(*p)
-                 : "0"(exch), "m"(*p)
-                 : "memory");
-    return exch;
-}
-
-inline int32 __sync_val_compare_and_swap(volatile int32* p, int32 old, int32 _new)
-{
-    int32 prev;
-    __asm__ __volatile__ ("lock;"
-                 "cmpxchgl %1, %2;"
-                 : "=a"(prev)
-                 : "q"(_new), "m"(*p), "a"(old)
-                 : "memory");
-    return prev;
-}
-#endif
-
 struct FLinuxPlatformAtomics
 {
 	static FORCEINLINE int32 InterlockedIncrement( volatile int32* Value )
@@ -88,6 +45,7 @@ typedef FLinuxPlatformAtomics FPlatformAtomics;
 
 #ifdef _MSC_VER
 
+#include <intrin.h>
 #undef InterlockedIncrement
 #undef InterlockedDecrement
 #undef InterlockedAdd
@@ -106,58 +64,26 @@ __declspec(dllimport) void __stdcall Sleep( unsigned long dwMilliseconds);
 
 struct FWindowsPlatformAtomics
 {
-	static FORCEINLINE int32 InterlockedIncrement( volatile int32* Value )
+	static FORCEINLINE int InterlockedIncrement( volatile int32* Value )
 	{
-		__asm
-		{
-			mov     ecx, Value;
-			xor     eax, eax
-			inc     eax
-			lock xadd [ecx], eax
-			inc     eax
-		}
+		return (int32)_InterlockedIncrement((long*)Value);
 	}
 	static FORCEINLINE int32 InterlockedDecrement( volatile int32* Value )
 	{
-		__asm
-		{
-			mov     ecx, Value
-			or      eax, 0xFFFFFFFF
-			lock xadd [ecx], eax
-			dec     eax
-		}
+		return (int32)_InterlockedDecrement((long*)Value);
 	}
 	static FORCEINLINE int32 InterlockedAdd( volatile int32* Value, int32 Amount )
 	{
-		__asm
-		{
-			mov     eax, Amount
-			mov     ecx, Value
-			lock xadd [ecx], eax
-		}
+		return (int32)_InterlockedExchangeAdd((long*)Value, (long)Amount);
 	}
 	static FORCEINLINE int32 InterlockedExchange( volatile int32* Value, int32 Exchange )
 	{
-		__asm
-		{
-			mov     eax, Exchange
-			mov     ecx, Value
-			xchg    eax, [ecx]
-		}
+		return (int32)_InterlockedExchange((long*)Value, (long)Exchange);
 	}
-
 	static FORCEINLINE int32 InterlockedCompareExchange( volatile int32* Dest, int32 Exchange, int32 Comparand )
 	{
-		__asm
-		{
-			mov     edx, Exchange
-			mov     ecx, Dest
-			mov     eax, Comparand
-			lock cmpxchg [ecx], edx
-		}
+		return (int32)_InterlockedCompareExchange((long*)Dest, (long)Exchange, (long)Comparand);
 	}
-
-protected:
 };
 typedef FWindowsPlatformAtomics FPlatformAtomics;
 

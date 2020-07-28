@@ -239,7 +239,7 @@ FTimestampDateTime FTimestampDateTime::Parse( const char* Str)
 {
 	FTimestampDateTime Res;
 	TChar8Buffer<32> Buffer(Str);
-	uint32 Len = Buffer.Len();
+	size_t Len = Buffer.Len();
 
 	if ( Len >= 10 )  //"2018-07-15T04:00:00.000Z"
 	{

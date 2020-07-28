@@ -23,7 +23,7 @@ const char* CBaseDir()
 {
 	if( !BaseDir[0] )
 	{
-		GetModuleFileNameA( GetModuleHandleA(nullptr), *BaseDir, BaseDir.Size() );
+		GetModuleFileNameA( GetModuleHandleA(nullptr), *BaseDir, (DWORD)BaseDir.Size() );
 		size_t i;
 		for( i=BaseDir.Len()-1; i>0; i-- ) //Remove the filename
 			if( BaseDir[i-1]=='\\' || BaseDir[i-1]=='/' )

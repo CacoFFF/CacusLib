@@ -19,13 +19,29 @@
 
 
 #ifdef _WINDOWS
-	#pragma comment( lib, "../lib/ntdll.lib")
-	extern "C"
-	{
-		__declspec(dllimport) uint32 __stdcall NtGetTickCount();
-		__declspec(dllimport) int32 __stdcall NtQueryTimerResolution( uint32* MinimumResolution, uint32* MaximumResolution, uint32* ActualResolution);
-		__declspec(dllimport) int32 __stdcall NtSetTimerResolution( uint32 DesiredResolution, uint8 SetResolution, uint32* CurrentResolution);
-	};
+# include "DynamicLinking.h"
+
+typedef uint32 (__stdcall *proc_NtGetTickCount)();
+typedef int32  (__stdcall *proc_NtQueryTimerResolution)(uint32*,uint32*,uint32*);
+typedef int32  (__stdcall *proc_NtSetTimerResolution)(uint32,uint8,uint32*);
+
+CScopedLibrary NtDLL("ntdll.dll");
+static auto f_NtGetTickCount         = NtDLL.Get<proc_NtGetTickCount>("NtGetTickCount");
+static auto f_NtQueryTimerResolution = NtDLL.Get<proc_NtQueryTimerResolution>("NtQueryTimerResolution");
+static auto f_NtSetTimerResolution   = NtDLL.Get<proc_NtSetTimerResolution>("NtSetTimerResolution");
+
+FORCEINLINE uint32 NtGetTickCount()
+{
+	return (*f_NtGetTickCount)();
+}
+FORCEINLINE int32 NtQueryTimerResolution( uint32* MinimumResolution, uint32* MaximumResolution, uint32* ActualResolution)
+{
+	return (*f_NtQueryTimerResolution)(MinimumResolution,MaximumResolution,ActualResolution);
+}
+FORCEINLINE int32 NtSetTimerResolution( uint32 DesiredResolution, uint8 SetResolution, uint32* CurrentResolution)
+{
+	return (*f_NtSetTimerResolution)(DesiredResolution,SetResolution,CurrentResolution);
+}
 #endif
 
 
@@ -38,7 +54,18 @@
 #endif
 
 
-
+//============== Sleep implementation, no zero case
+//
+CTickerEngine::CTickerEngine()
+{
+	if ( FPlatformTime::GetSecondsPerCycle() == 0 )
+		FPlatformTime::InitTiming();
+	LastSleepExitTime = 0;
+	UpdateTimerResolution();
+	LastTickTimestamp = 0;
+	LastInterval = 0;
+	LastAdjustedInterval = 0;
+}
 
 
 //============== Sleep implementation, no zero case
@@ -121,6 +148,8 @@ void CTickerEngine::UpdateTimerResolution()
 
 	if ( SleepResolution <= 0.0 )
 	{
+		// NOTE: in windows, it's impossible to get a res lower than 1ms using this
+		// Need to use timers
 		NativeSleep(MIN_GRANULARITY);
 		uint64 Cycles = FPlatformTime::Cycles64();
 		NativeSleep(MIN_GRANULARITY);

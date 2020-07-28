@@ -87,7 +87,7 @@ uint8* CStringBuffer( size_t BufferSize)
 	if ( !Result )
 	{
 		static char Buf[256];
-		sprintf( Buf, "Requested more data than available from String Buffer [%i/%i]", BufferSize, StringBuffer.Inner->Size() );
+		sprintf( Buf, "Requested more data than available from String Buffer [%i/%i]", (int)BufferSize, (int)StringBuffer.Inner->Size() );
 		DebugCallback( Buf, CACUS_CALLBACK_STRING | CACUS_CALLBACK_EXCEPTION);
 	}
 	return Result;

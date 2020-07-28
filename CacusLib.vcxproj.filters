@@ -155,6 +155,12 @@
     <ClInclude Include="Cacus\Math\CIVector2.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Cacus\DynamicLinking.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cacus\CTickerEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CacusLib.rc">

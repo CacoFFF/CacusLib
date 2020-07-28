@@ -586,7 +586,7 @@ void CProperty::Import( void* Into, const CParserElement& Elem) const
 {
 #ifdef _STRING_
 	if ( !Parse( Into, Elem.Value.c_str() ) )
-		Cdebugf("Import failed for element [%s] with value %s", Elem.Key, Elem.Value);
+		Cdebugf("Import failed for element [%s] with value %s", Elem.Key.c_str(), Elem.Value.c_str());
 #endif
 }
 

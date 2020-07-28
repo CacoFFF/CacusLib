@@ -4,29 +4,19 @@
 
 #ifndef CACUS_USE_TESTS
 
-void TestMain()
-{
-}
+void TestMain(){}
+void TestCallbacks(){}
+void TestCharBuffer(){}
+void TestTimer(){}
 
 #else
 
 
 #include "DebugCallback.h"
 #include "TCharBuffer.h"
+#include "CTickerEngine.h"
 
 #include <stdio.h>
-
-
-static void TestCallbacks();
-static void TestCharBuffer();
-
-#define TEST_AND_CONTINUE(testfunc) try{ testfunc(); } catch(...){}
-
-void TestMain()
-{
-	TEST_AND_CONTINUE(TestCallbacks)
-	TEST_AND_CONTINUE(TestCharBuffer)
-}
 
 
 //======================================================================
@@ -94,7 +84,7 @@ static char ThrowBuf[256] = {};
 
 //============================= TestCallbacks
 //
-static void TestCallbacks()
+void TestCallbacks()
 {
 	guardtest("Callback system");
 	CDbg_RegisterCallback( &TestCallback, CACUS_CALLBACK_ALL);
@@ -160,9 +150,9 @@ void TestCharBuffer()
 	Stage = "Assignment and test";
 	AnsiBuffer = TEST_ASSIGNMENT;
 	checktest( strcmp(*AnsiBuffer, TEST_ASSIGNMENT)== 0, "Wrong assignment > %s / " TEST_ASSIGNMENT, *AnsiBuffer);
-	checktest( AnsiBuffer.Len() == _len(TEST_ASSIGNMENT), "Wrong length [%i dyn/%i const]", AnsiBuffer.Len(), _len(TEST_ASSIGNMENT) );
+	checktest( AnsiBuffer.Len() == _len(TEST_ASSIGNMENT), "Wrong length [%i dyn/%i const]", (int)AnsiBuffer.Len(), (int)_len(TEST_ASSIGNMENT) );
 	AnsiBuffer += *AnsiBuffer;
-	checktest( AnsiBuffer.Len() == _len(TEST_ASSIGNMENT)*2, "Bad self-concatenation [%i dyn/%i const]", AnsiBuffer.Len(), _len(TEST_ASSIGNMENT TEST_ASSIGNMENT) );
+	checktest( AnsiBuffer.Len() == _len(TEST_ASSIGNMENT)*2, "Bad self-concatenation [%i dyn/%i const]", (int)AnsiBuffer.Len(), (int)_len(TEST_ASSIGNMENT TEST_ASSIGNMENT) );
 	checktest( AnsiBuffer == TEST_ASSIGNMENT TEST_ASSIGNMENT, "Bad self-concatenation [%s/%s]", *AnsiBuffer, TEST_ASSIGNMENT TEST_ASSIGNMENT );
 
 	Stage = "Circular string buffer";
@@ -170,6 +160,35 @@ void TestCharBuffer()
 	const char* TestC = CSprintf( "%s%s", TEST_ASSIGNMENT, TEST_ASSIGNMENT);
 	checktest( AnsiBuffer == TestC, "Bad CSprintf result [%s != %s]", TestC, *AnsiBuffer);
 	checktest( !CStrncmp( TestC, TEST_ASSIGNMENT), "CStrncmp <array template> error" );
+	unguardtest
+}
+
+
+//============================= TestTimer
+// Tests the timing system and sleep system with up to 1 ms error
+//
+void TestTimer()
+{
+	guardtest("Timer");
+	double AccumulatedTime;
+	CTickerEngine Ticker;
+	Ticker.UpdateTimerResolution();
+
+	printf( " TR=%fms SR=%fms... ", Ticker.GetTimeStampResolution() * 1000, Ticker.GetSleepResolution() * 1000);
+
+	Stage = "Now";
+	Ticker.TickNow();
+		
+	Stage = "Absolute";
+	AccumulatedTime  = Ticker.TickAbsolute( Ticker.GetLastTickTimestamp() + 0.1);
+	AccumulatedTime += Ticker.TickAbsolute( Ticker.GetLastTickTimestamp() + 0.1);
+	checktest( AccumulatedTime > 0.199 && AccumulatedTime < 0.201, "Ticker engine too imprecise (%f/0.2)", AccumulatedTime);
+
+	Stage = "Interval";
+	AccumulatedTime  = Ticker.TickInterval(0.1);
+	AccumulatedTime += Ticker.TickInterval(0.1);
+	checktest( AccumulatedTime > 0.199 && AccumulatedTime < 0.201, "Ticker engine too imprecise (%f/0.2)", AccumulatedTime );
+
 	unguardtest
 }
 

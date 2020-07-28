@@ -110,7 +110,7 @@ CProperty::CProperty( const char* InName, CStruct* InParent, int32 InArrayDim, s
 	if ( InParent )
 	{
 		Parent->Properties = this;
-		int32 EndOffset = Offset + ElementSize * ArrayDim;
+		int32 EndOffset = (int32)(Offset + ElementSize * ArrayDim);
 		if ( EndOffset > Parent->PropertiesSize )
 			Parent->PropertiesSize = EndOffset;
 		if ( PropertyFlags | PF_Destructible )

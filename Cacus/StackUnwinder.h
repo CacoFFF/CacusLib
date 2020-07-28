@@ -16,8 +16,9 @@ class CACUS_API CUnwinder
 public:
 	CUnwinder* Prev; //'prev' instead of because it signifies creation time.
 	uint32 EnvId;
+	int __padding1;
 	jmp_buf Environment;
-	unsigned long long __padding; //setjmp appears to be inconsistant between header versions, add this padding just in case
+	unsigned long long __padding2; //setjmp appears to be inconsistant between header versions, add this padding just in case
 
 	CUnwinder();
 	~CUnwinder();

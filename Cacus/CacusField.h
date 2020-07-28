@@ -540,7 +540,7 @@ class CACUS_API PropertyStringFunction : public CProperty
 
 
 #define CP_CREATE(Type,...) \
-	new Type(Name,Parent,1,((uint32)&Prop)-CSTRUCT_BASE,PropertyFlags,##__VA_ARGS__)
+	new Type(Name,Parent,1,((int_p)&Prop)-CSTRUCT_BASE,PropertyFlags,##__VA_ARGS__)
 
 template<typename A> inline CProperty* CreateProperty( const char* Name, CStruct* Parent, TFixedArray<A>& Prop, uint32 PropertyFlags=0)
 {

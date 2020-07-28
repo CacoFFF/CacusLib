@@ -247,7 +247,7 @@ extern "C"
 	CACUS_API uint8* CStringBuffer( size_t BufferSize); //Alignment is always platform INT, max size is 256kb
 };
 
-template<typename CHAR> CHAR* CharBuffer( uint32 CharCount)
+template<typename CHAR> CHAR* CharBuffer( size_t CharCount)
 {
 	static_assert( CheckCharType<CHAR>() ,"CharBuffer: Invalid character type");
 	return (CHAR*)CStringBuffer( sizeof(CHAR)*CharCount);
@@ -302,9 +302,9 @@ struct utf8
 	}
 
 #ifndef NO_CPP11_TEMPLATES
-	template< typename CHAR, size_t DestSize > static FORCEINLINE int Decode( CHAR (&Dest)[DestSize], const char* Src)
+	template< typename CHAR, size_t DestSize > static FORCEINLINE size_t Decode( CHAR (&Dest)[DestSize], const char* Src)
 	{	return Decode<CHAR>( Dest, DestSize, Src);	}
-	template< typename CHAR, size_t DestSize > static FORCEINLINE int Encode( char (&Dest)[DestSize], const CHAR* Src)
+	template< typename CHAR, size_t DestSize > static FORCEINLINE size_t Encode( char (&Dest)[DestSize], const CHAR* Src)
 	{	return Encode<CHAR>( Dest, DestSize, Src);	}
 #endif
 };
