@@ -81,17 +81,17 @@ template< typename T=void > inline T* AddressAlign( T* Addr, const size_t Align)
 
 //=========================================================
 // Bit metas
-template<uint32 N, uint32 Bit=31> struct TBits
+template<uint64 N, uint32 Bit=63> struct TBits
 {
-	static const uint32 Counter = (N>>(Bit-1UL)) ? Bit : TBits<N,Bit-1>::Counter;
-	static const uint32 Mask = (1 << Counter) - 1;
-	static const uint32 MostSignificant = 1 << (Counter-1);
+	static const uint32 Counter = (N>>(Bit-1)) ? Bit : TBits<N,Bit-1>::Counter;
+	static const uint64 Mask = (1ull << Counter) - 1;
+	static const uint64 MostSignificant = 1ull << (Counter-1);
 };
-template<uint32 N> struct TBits<N,0>
+template<uint64 N> struct TBits<N,0>
 {
 	static const uint32 Counter = 0;
-	static const uint32 Mask = 0;
-	static const uint32 MostSignificant = 0;
+	static const uint64 Mask = 0;
+	static const uint64 MostSignificant = 0;
 };
 static_assert( TBits<20>::Counter == 5, "EEOR1");
 static_assert( TBits<20>::Mask == 0b11111, "EEOR2");

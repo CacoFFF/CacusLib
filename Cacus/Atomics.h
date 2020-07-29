@@ -56,10 +56,12 @@ typedef FLinuxPlatformAtomics FPlatformAtomics;
 #pragma warning (push)
 #pragma warning (disable : 4035)
 
+#ifndef _INC_WINDOWS
 extern "C"
 {
 __declspec(dllimport) void __stdcall Sleep( unsigned long dwMilliseconds);
 };
+#endif
 
 
 struct FWindowsPlatformAtomics

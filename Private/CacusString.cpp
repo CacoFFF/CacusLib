@@ -60,7 +60,7 @@ struct __controller
 	__controller() : Inner(nullptr) {};
 	~__controller() { if (Inner) CircularFree(Inner); Inner=nullptr; }
 };
-static __controller StringBuffer; //This autodeletes the buffer on 
+static thread_local __controller StringBuffer; //This autodeletes the buffer on 
 
 bool CStringBufferInit( size_t BufferSize)
 {

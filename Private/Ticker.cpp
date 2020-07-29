@@ -62,7 +62,7 @@ CTickerEngine::CTickerEngine()
 		FPlatformTime::InitTiming();
 	LastSleepExitTime = 0;
 	UpdateTimerResolution();
-	LastTickTimestamp = 0;
+	LastTickTimestamp = FPlatformTime::Seconds();
 	LastInterval = 0;
 	LastAdjustedInterval = 0;
 }

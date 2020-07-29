@@ -95,6 +95,11 @@ public:
 		TransformUpperCase( Buffer);
 	}
 
+	void Fix()
+	{
+		Buffer[N-1] = '\0';
+	}
+
 #ifdef _INC_STDIO
 	void print() const
 	{
