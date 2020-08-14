@@ -2,6 +2,7 @@
 #include "CacusField.h"
 #include "TimeStamp.h"
 #include "StackUnwinder.h"
+#include "DebugCallback.h"
 
 
 static CStruct* StructList = nullptr;
@@ -150,9 +151,9 @@ const char* PropertyStdString::String( void* Object) const
 #endif
 
 //=======================
-// PropertyC8Text
+// PropertyC8TextBase
 
-bool PropertyC8Text::Parse( void* Into, const char* From) const
+bool PropertyC8TextBase::Parse( void* Into, const char* From) const
 {
 	char* Prop = (char*)Into + Offset;
 	if ( PropertyFlags & PF_UTF8Parse )
@@ -164,28 +165,29 @@ bool PropertyC8Text::Parse( void* Into, const char* From) const
 		return !CStrcpy_s( Prop, BufSize, From);
 }
 
-bool PropertyC8Text::Booleanize( void* Object) const
+bool PropertyC8TextBase::Booleanize( void* Object) const
 {
 	char* Prop = (char*)Object + Offset;
 	return *Prop != 0;
 }
 
-const char* PropertyC8Text::String( void* Object) const //SHEEEEEEEIT
+const char* PropertyC8TextBase::String( void* Object) const //SHEEEEEEEIT
 {
+	char* SrcBuffer = (char*)Object + Offset;
 	if ( PropertyFlags & PF_UTF8Parse )
 	{
 		//TODO: Convert to UTF-8 encoded string
 	}
-	return CopyToBuffer( (char*)Object + Offset, BufSize );
+	return CopyToBuffer( SrcBuffer, BufSize );
 }
 
 //=======================
-// PropertyC16Text
+// PropertyC16TextBase
 
 
-bool PropertyC16Text::Parse( void* Into, const char* From) const
+bool PropertyC16TextBase::Parse( void* Into, const char* From) const
 {
-	char16_t* Buffer = (char16_t*)((uint8*)Into + Offset);
+	char16* Buffer = (char16_t*)((uint8*)Into + Offset);
 	if ( PropertyFlags & PF_UTF8Parse )
 	{
 		utf8::Decode( Buffer, BufSize, From);
@@ -195,15 +197,15 @@ bool PropertyC16Text::Parse( void* Into, const char* From) const
 		return !CStrcpy_s( Buffer, BufSize, From);
 }
 
-bool PropertyC16Text::Booleanize( void* Object) const
+bool PropertyC16TextBase::Booleanize( void* Object) const
 {
-	char16_t* Buffer = (char16_t*)((uint8*)Object + Offset);
+	char16* Buffer = (char16_t*)((uint8*)Object + Offset);
 	return *Buffer != 0;
 }
 
-const char* PropertyC16Text::String( void* Object) const //SHEEEEEEEIT
+const char* PropertyC16TextBase::String( void* Object) const //SHEEEEEEEIT
 {
-	char16_t* SrcBuffer = (char16_t*)((uint8*)Object + Offset);
+	char16* SrcBuffer = (char16_t*)((uint8*)Object + Offset);
 	if ( PropertyFlags & PF_UTF8Parse )
 	{
 		auto Len = utf8::EncodedLen(SrcBuffer);
@@ -257,6 +259,29 @@ const char* PropertyInt32::String( void* Object) const
 {
 	Primitive& Prop = GetProp<Primitive>(Object);
 	return CSprintf( "%i", Prop);
+}
+
+//=======================
+// PropertyUInt32
+
+bool PropertyUInt32::Parse( void* Into, const char* From) const
+{
+	Primitive& Prop = GetProp<Primitive>(Into);
+	char* EndPtr = (char*)From;
+	Prop = strtoul(From,&EndPtr,0);
+	return true;
+}
+
+bool PropertyUInt32::Booleanize( void* Object) const
+{
+	Primitive& Prop = GetProp<Primitive>(Object);
+	return Prop != 0;
+}
+
+const char* PropertyUInt32::String( void* Object) const
+{
+	Primitive& Prop = GetProp<Primitive>(Object);
+	return CSprintf( "%u", Prop);
 }
 
 //=======================

@@ -36,9 +36,6 @@
     <ClCompile Include="Private\StackUnwinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Private\STL_String.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Private\Thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -73,6 +70,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Private\Ticker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\UtilsGeneric.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,12 +116,6 @@
     <ClInclude Include="Cacus\Internal\CParser.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="Cacus\Internal\fileext.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="Cacus\Internal\stringext.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
     <ClInclude Include="Private\CacusLib.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -159,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Cacus\CTickerEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cacus\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

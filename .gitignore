@@ -16,6 +16,19 @@
 *.dylib
 *.dll
 
+# Visual Studio files
+.vs/
+Debug/
+*.db
+*.sbr
+*.log
+*.bsc
+*.lib
+*.exp
+*.pdb
+*.tlog
+*.res
+
 # Fortran module files
 *.mod
 *.smod

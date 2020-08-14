@@ -153,13 +153,13 @@ class CACUS_API CFixedArray
 {
 protected:
 	void* Data;
-	uint32 Num;
+	size_t Num;
 
 	CFixedArray()                                         : Data(nullptr), Num(0) {}
 public:
-	uint32 Size() const                                   { return Num; }
+	size_t Size() const                                   { return Num; }
 	void* GetData()                                       { return Data; }
-	void Setup( uint32 NewNum, size_t ElementSize);
+	void Setup( size_t NewNum, size_t ElementSize);
 
 	~CFixedArray()                                        { if ( Data ) CFree(Data); Data = nullptr; }
 
@@ -171,9 +171,8 @@ template< class T > class TFixedArray : public CFixedArray
 {
 public:
 	TFixedArray()                                         : CFixedArray() {}
-	TFixedArray(uint32 InSize)                            : CFixedArray() { Setup(InSize); }
+	TFixedArray(size_t InSize)                            : CFixedArray() { Setup(InSize); }
 
-	#ifndef NO_MOVE_CONSTRUCTORS
 	TFixedArray( TFixedArray<T>&& Other) noexcept //Move constructor, used for functions returning this object
 	{
 		Data = Other.Data;
@@ -181,9 +180,8 @@ public:
 		Other.Data = nullptr;
 		Other.Num = 0;
 	}
-	#endif
 
-	void Setup( uint32 NewNum)                            { CFixedArray::Setup( NewNum, sizeof(T) ); }
+	void Setup( size_t NewNum)                            { CFixedArray::Setup( NewNum, sizeof(T) ); }
 	operator T*()                                         { return (T*)Data; }
 	operator const T*() const                             { return (const T*)Data; }
 	static constexpr size_t ElementSize()                 { return sizeof(T); }

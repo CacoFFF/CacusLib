@@ -4,6 +4,7 @@
 #include "StackUnwinder.h"
 #include "DebugCallback.h"
 
+bool CProperty::CParserLog = false;
 
 //*******************************************************************
 // PARSER ROOT
@@ -48,47 +49,30 @@ bool DataToObject( const char* Data, void* Into, CProperty* Outer, EParseType Im
 	return Result;
 }
 
-void ObjectToData( const char*& OutData, void* From, CProperty* Outer, EParseType ExportType, int Delta)
+void ObjectToData( std::string& OutData, void* From, CProperty* Outer, EParseType ExportType, int Delta)
 {
+	OutData.clear();
 	CParserElement ElementList(PEF_Root);
 	if ( Delta )
 		ElementList.Flags |= PEF_DeltaExport;
+	OutData.reserve(2048);
 	Outer->Export( From, ElementList );
+	if ( CProperty::CParserLog )
+		ElementList.LogTokens();
 
-	std::string StrBuffer;
-	ElementList.ExportAs( StrBuffer, ExportType);
-
-	size_t Len = StrBuffer.length();
-	if ( Len )
-	{
-		char* Data = CharBuffer<char>( Len + 1 );
-		CMemcpy( Data, StrBuffer.data(), Len+1 );
-		Data[Len] = 0;
-		OutData = Data;
-	}
-	else
-		OutData = "";
+	ElementList.ExportAs( OutData, ExportType);
 }
 
-bool DataToData( const char* InData, const char*& OutData, EParseType InFormat, EParseType OutFormat)
+bool DataToData( const char* InData, std::string& OutData, EParseType InFormat, EParseType OutFormat)
 {
+	OutData.clear();
 	CParser* Parser = CreateParser( InData, InFormat);
 	bool Result = Parser->Parse();
 	OutData = "";
 	if ( Result )
 	{
-		std::string StrBuffer;
-		StrBuffer.reserve( 2048);
-		Parser->RootElement.ExportAs( StrBuffer, OutFormat);
-		//Manual buffer, as we know LEN already
-		size_t Len = StrBuffer.length();
-		if ( Len )
-		{
-			char* Data = CharBuffer<char>( Len + 1 );
-			CMemcpy( Data, StrBuffer.data(), Len+1 );
-			Data[Len] = 0;
-			OutData = Data;
-		}
+		OutData.reserve(2048);
+		Parser->RootElement.ExportAs( OutData, OutFormat);
 	}
 	delete Parser;
 	return Result;
@@ -127,6 +111,8 @@ void CParserElement::LogTokens( uint32 Depth)
 			Text += " ARRAY";
 		if ( Element->Flags & PEF_Object )
 			Text += " OBJECT";
+		if ( Element->TypeName )
+			Text += " (" + std::string(Element->TypeName) + ")";
 		DebugCallback( Text.c_str(), CACUS_CALLBACK_PARSER );
 		Element->Children->LogTokens( Depth+1);
 		Element = Element->Next;
@@ -269,6 +255,8 @@ void CParserElement::ParseObject( const CStruct* Struct, void*& Into) const
 			CProperty* Property = Struct->FindProperty( Elem->Key.c_str() );
 			if ( Property && !(Property->PropertyFlags & PF_NoImport) )
 				Property->Import( Into, *Elem );
+			else
+				DebugCallback( CSprintf("ParseObject: property not found %s", Elem->Key.c_str()), CACUS_CALLBACK_PARSER );
 		}
 		if ( Struct->PostParseFunction )
 			(*Struct->PostParseFunction)(Into);
@@ -313,6 +301,7 @@ void CParserElement::ExportObject( const CStruct* Struct, void* From, bool Root)
 		if ( Link->ShouldExport(From, Delta) )
 		{
 			CParserElement* NewElement = new CParserElement( *this, Link->Name);
+			NewElement->TypeName = Link->TypeName();
 			Link->Export( From, *NewElement);
 			//TODO: EMPTY PROPERTYSTRUCT NEEDS TO BE REMOVED (PTR VERSION NOT BECAUSE IT CALLS NEW() )
 		}
@@ -352,10 +341,13 @@ uint32 CParserElement::RemoveFlaggedTokens( CParserElement** TokenList, int32 Fl
 bool CJSONParser::Parse()
 {
 	AdvanceThrough( Data, JSON_SKIP);
-	return 
+	bool Result = 
 		  (*Data == '{') ? ParseObject(&RootElement)
 		: (*Data == '[') ? ParseArray( &RootElement)
 		:                  false;
+	if ( CProperty::CParserLog )
+		RootElement.LogTokens(); //THIS CAN EXPOSE PASSWORDS
+	return Result;
 }
 
 bool CJSONParser::ParseKey( CParserElement* Parent)
@@ -484,7 +476,8 @@ bool CPlainTextFormParser::Parse()
 {
 	while ( (Line=ExtractLine(Data)) != nullptr )
 		ParseMembers( &RootElement);
-//	RootElement.LogTokens(); //THIS CAN EXPOSE PASSWORDS
+	if ( CProperty::CParserLog )
+		RootElement.LogTokens(); //THIS CAN EXPOSE PASSWORDS
 	return true;
 }
 
@@ -561,6 +554,12 @@ bool CPlainTextFormParser::ParseArray( CParserElement* Container)
 
 
 #ifdef _VECTOR_
+
+bool PropertyStdVectorBase::Booleanize( void* Object) const
+{
+	return VectorGetSize(Object) > 0;
+}
+
 //Helpers - to make life easier
 size_t PropertyStdVectorBase::_CalcVectorSize( const CParserElement& Elem, CParserElement*& Child) const
 {
@@ -621,6 +620,22 @@ void PropertyMasterObjectArray::Import( void* Into, const CParserElement& Elem) 
 		//TODO: ADD SPECIALIZED CLASS CREATOR
 		Inner->Import( &NewObject, *Link);
 		Array.Add( NewObject);
+	}
+#endif
+}
+
+void PropertyStdVectorBase::Import( void* Into, const CParserElement& Elem) const
+{
+#ifdef _STRING_
+	VectorSetSize( Into, 0);
+	size_t Children = 0;
+	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )	Children++;
+	VectorSetSize( Into, Children);
+	size_t i = 0;
+	for ( CParserElement* Link=Elem.Children ; Link ; Link=Link->Next )
+	{
+		void* Object = VectorGetElement( Into, i++);
+		Inner->Import( Object, *Link);
 	}
 #endif
 }
@@ -685,6 +700,19 @@ void PropertyMasterObjectArray::Export( void* From, CParserElement& Elem) const
 	{
 		CParserElement* Child = new CParserElement( Elem);
 		Inner->Export( &Array.List[i], *Child);
+	}
+#endif
+}
+
+void PropertyStdVectorBase::Export( void* From, CParserElement& Elem) const
+{
+#ifdef _STRING_
+	Elem.Flags |= PEF_Array;
+	int_p ListSize = VectorGetSize(From);
+	for ( int_p i=ListSize-1; i>=0; i++)
+	{
+		CParserElement* Child = new CParserElement(Elem);
+		Inner->Export( VectorGetElement(From,i), *Child);
 	}
 #endif
 }

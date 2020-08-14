@@ -27,15 +27,16 @@ public:
 	CParserElement* Children;
 	std::string Key;
 	std::string Value;
+	const char* TypeName;
 	int32 Flags;
 
 	//Default constructor
 	CParserElement( int32 InFlags)
-		: Next(nullptr), Children(nullptr), Flags(InFlags) {}
+		: Next(nullptr), Children(nullptr), TypeName(nullptr), Flags(InFlags) {}
 
 	//Child constructor (attach at front of linked list)
 	CParserElement( CParserElement& Parent, const char* InKeyName="")
-		: Next(Parent.Children), Children(nullptr), Key(InKeyName), Flags(Parent.Flags&PEF_Inherit)
+		: Next(Parent.Children), Children(nullptr), TypeName(nullptr), Key(InKeyName), Flags(Parent.Flags&PEF_Inherit)
 	{ Parent.Children = this; }
 
 	~CParserElement();
@@ -55,9 +56,9 @@ public:
 	void ParseObjects( const CStruct* Struct, CArray<void*>& Into) const; //Overwrites elements if existing, does not deallocate excedent
 	void ExportObject( const CStruct* Struct, void* From, bool Root=true);
 
-	template<class T> T* ParseObject()                   { return (T*)ParseObject( T::StaticStruct()); }
-	template<class T> T* ParseObject( T* Into)           { return (T*)ParseObject( T::StaticStruct(), Into); }
-	template<class T> void ParseObjects( CArray<T*>& IO) { ParseObjects( T::StaticStruct(), *(CArray<void*>*)&IO); }
+	template<class T> T* ParseObject()                   { return (T*)ParseObject( T::GetInstanceCStruct()); }
+	template<class T> T* ParseObject( T* Into)           { return (T*)ParseObject( T::GetInstanceCStruct(), Into); }
+	template<class T> void ParseObjects( CArray<T*>& IO) { ParseObjects( T::GetInstanceCStruct(), *(CArray<void*>*)&IO); }
 
 	bool operator==( const CParserElement& Other) const;
 	bool operator!=( const CParserElement& Other) const  { return !(*this == Other); }

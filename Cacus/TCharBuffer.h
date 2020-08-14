@@ -125,8 +125,8 @@ public:
 };
 #ifndef NO_CPP11_TEMPLATES
 	template <size_t N> using TChar8Buffer    = TCharBuffer<N, char>;
-	template <size_t N> using TChar16Buffer   = TCharBuffer<N, char16_t>;
-	template <size_t N> using TChar32Buffer   = TCharBuffer<N, char32_t>;
+	template <size_t N> using TChar16Buffer   = TCharBuffer<N, char16>;
+	template <size_t N> using TChar32Buffer   = TCharBuffer<N, char32>;
 	template <size_t N> using TCharWideBuffer = TCharBuffer<N, wchar_t>;
 #endif
 

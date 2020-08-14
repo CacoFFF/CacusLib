@@ -36,5 +36,19 @@ struct CWindowsScopedLibrary
 
 typedef CWindowsScopedLibrary CScopedLibrary;
 
+#elif _UNIX
+
+struct CUnixScopedLibrary
+{
+	void* Handle;
+
+	CUnixScopedLibrary()                               : Handle(nullptr) {}
+	CUnixScopedLibrary( const char* LibraryName)       : Handle(LOAD_LIBRARY_HERE) {}
+	~CUnixScopedLibrary()                              { if ( Handle ) FREE_LIBRARY_HERE; }
+
+	operator bool() const                              { return Handle != nullptr; }
+	template<class T> T Get( const char* Sym) const    { return GET_SYMBOL_HERE; }
+};
+
 #endif
 

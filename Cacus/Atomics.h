@@ -120,8 +120,6 @@ class CSleepLock
 	volatile int32 *Lock;
 	uint32 SleepInterval;
 
-	CSleepLock() {} //No default constructor
-
 public:	
 	FORCEINLINE CSleepLock( volatile int32* InLock, uint32 InSleep=0)
 	:	Lock(InLock)
@@ -144,8 +142,6 @@ public:
 class CScopeCounter
 {
 	volatile int32 *Counter;
-
-	CScopeCounter() {} //No default constructor
 
 public:
 	CScopeCounter( volatile int32* InCounter)
@@ -181,6 +177,5 @@ public:
 		FPlatformAtomics::InterlockedDecrement( &Counter);
 	}
 };
-
 
 #endif

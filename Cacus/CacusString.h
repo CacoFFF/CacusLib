@@ -49,14 +49,12 @@ template<> inline constexpr bool CheckCharType<char16>()             { return tr
 template<> inline constexpr bool CheckCharType<char32>()             { return true; }
 template<> inline constexpr bool CheckCharType<wchar_t>()            { return true; }
 
-#ifndef NO_CPP11_TEMPLATES
-	//Constant expression string length (cannot use recursive versions because MSVC isn't fully compliant)
-	template< typename CHAR , size_t ArSize > constexpr FORCEINLINE size_t _len( const CHAR (&Str)[ArSize])
-	{
-		static_assert( CheckCharType<CHAR>(),"_len: Invalid character type");
-		return ArSize-1;
-	}
-#endif
+//Constant expression string length (cannot use recursive versions because MSVC isn't fully compliant)
+template< typename CHAR , size_t ArSize > constexpr FORCEINLINE size_t _len( const CHAR (&Str)[ArSize])
+{
+	static_assert( CheckCharType<CHAR>(),"_len: Invalid character type");
+	return ArSize-1;
+}
 
 
 //*******************************************************************
@@ -67,10 +65,10 @@ extern "C"
 	CACUS_API uint32 CGetCharType( uint32 ch);
 	CACUS_API bool CIsDigit( uint32 ch);
 
-	CACUS_API int CStrcpy8_s ( char*   Dest, uint32 DestChars, const char*   Src);
-	CACUS_API int CStrcpy16_s( char16* Dest, uint32 DestChars, const char16* Src);
-	CACUS_API int CStrcpy32_s( char32* Dest, uint32 DestChars, const char32* Src);
-	CACUS_API int CStrcpy_g_s( void* Dest, uint32 DestBytes, uint32 DestChars, const void* Src, uint32 SrcBytes); //Handles char <-> wide conversions
+	CACUS_API int CStrcpy8_s ( char*   Dest, size_t DestChars, const char*   Src);
+	CACUS_API int CStrcpy16_s( char16* Dest, size_t DestChars, const char16* Src);
+	CACUS_API int CStrcpy32_s( char32* Dest, size_t DestChars, const char32* Src);
+	CACUS_API int CStrcpy_g_s( void* Dest, size_t DestBytes, size_t DestChars, const void* Src, size_t SrcBytes); //Handles char <-> wide conversions
 
 	CACUS_API char*   CStrcat8_s ( char*   Dest, size_t DestSize, const char*   Src);
 	CACUS_API char16* CStrcat16_s( char16* Dest, size_t DestSize, const char16* Src);
@@ -100,7 +98,7 @@ extern "C"
 	CACUS_API wchar_t* VARARGS CWSprintf( const wchar_t* fmt, ...); //Print into circular buffer
 }
 
-template< typename CHARDEST , typename CHARSRC > int FORCEINLINE CStrcpy_s( CHARDEST* Dest, uint32 DestSize, const CHARSRC* Src)
+template< typename CHARDEST , typename CHARSRC > int FORCEINLINE CStrcpy_s( CHARDEST* Dest, size_t DestSize, const CHARSRC* Src)
 {
 	if      ( sizeof(CHARDEST)==1 && sizeof(CHARSRC)==1 ) return CStrcpy8_s ( (char*)  Dest, DestSize, (const char*)   Src);
 	else if ( sizeof(CHARDEST)==2 && sizeof(CHARSRC)==2 ) return CStrcpy16_s( (char16*)Dest, DestSize, (const char16*) Src);
@@ -109,7 +107,7 @@ template< typename CHARDEST , typename CHARSRC > int FORCEINLINE CStrcpy_s( CHAR
 }
 
 #ifndef NO_CPP11_TEMPLATES
-	template< typename CHARDEST , typename CHARSRC , uint32 DestChars > int FORCEINLINE CStrcpy_s( CHARDEST (&Dest)[DestChars], const CHARSRC* Src)
+	template< typename CHARDEST , typename CHARSRC , size_t DestChars > int FORCEINLINE CStrcpy_s( CHARDEST (&Dest)[DestChars], const CHARSRC* Src)
 	{
 		return CStrcpy_s<CHARDEST,CHARSRC>( Dest, DestChars, Src);
 	}
@@ -152,12 +150,10 @@ template < typename CHAR > FORCEINLINE int CStrncmp( const CHAR* S1, const CHAR*
 	if ( sizeof(CHAR) == 2 ) return CStrncmp16( (const char16*)S1, (const char16*)S2, cmplen);
 	if ( sizeof(CHAR) == 4 ) return CStrncmp32( (const char32*)S1, (const char32*)S2, cmplen);
 }
-#ifndef NO_CPP11_TEMPLATES
-	template < typename CHAR, size_t cmpsize > FORCEINLINE int CStrncmp( const CHAR* S1, const CHAR(&S2)[cmpsize])
-	{
-		return CStrncmp( S1, S2, cmpsize-1);
-	}
-#endif
+template < typename CHAR, size_t cmpsize > FORCEINLINE int CStrncmp( const CHAR* S1, const CHAR(&S2)[cmpsize])
+{
+	return CStrncmp( S1, S2, cmpsize-1);
+}
 
 
 //Cleans up a string buffer, useful for safety purposes
@@ -230,12 +226,10 @@ template < typename CHAR > FORCEINLINE CHAR* CopyToBuffer( const CHAR* Src, size
 	if ( sizeof(CHAR) == 2 ) return (CHAR*)CopyToBuffer16( (const char16*)Src, Len);
 	if ( sizeof(CHAR) == 4 ) return (CHAR*)CopyToBuffer32( (const char32*)Src, Len);
 }
-#ifndef NO_CPP11_TEMPLATES
-	template < typename CHAR, size_t ArraySize > FORCEINLINE CHAR* CopyToBuffer( CHAR (&Src)[ArraySize])
-	{
-		return CopyToBuffer<CHAR>( Src, ArraySize-1);
-	}
-#endif
+template < typename CHAR, size_t ArraySize > FORCEINLINE CHAR* CopyToBuffer( CHAR (&Src)[ArraySize])
+{
+	return CopyToBuffer<CHAR>( Src, ArraySize-1);
+}
 
 //*******************************************************************
 // STRING BUFFERS
@@ -301,12 +295,14 @@ struct utf8
 		else if ( sizeof(CHAR) == 4 ) return UTF8_Encode32( Dest, DestSize, (const char32*)Src);
 	}
 
-#ifndef NO_CPP11_TEMPLATES
 	template< typename CHAR, size_t DestSize > static FORCEINLINE size_t Decode( CHAR (&Dest)[DestSize], const char* Src)
-	{	return Decode<CHAR>( Dest, DestSize, Src);	}
+	{
+		return Decode<CHAR>( Dest, DestSize, Src);
+	}
 	template< typename CHAR, size_t DestSize > static FORCEINLINE size_t Encode( char (&Dest)[DestSize], const CHAR* Src)
-	{	return Encode<CHAR>( Dest, DestSize, Src);	}
-#endif
+	{
+		return Encode<CHAR>( Dest, DestSize, Src);
+	}
 };
 
 

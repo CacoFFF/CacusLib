@@ -79,27 +79,31 @@ static_assert( sizeof(int64)  == 8, "Bad int64 size");
 #define STRING(x) STRING2(x)  
 
 #ifdef _MSC_VER
-	#pragma warning (disable : 4100) //Unreferenced parameter
-	#pragma warning (disable : 4127) //Conditional expression is constant
-	#pragma warning (disable : 4251) //Templated members do not need to be exported you silly compiler
+# pragma warning (disable : 4100) //Unreferenced parameter
+# pragma warning (disable : 4127) //Conditional expression is constant
+# pragma warning (disable : 4251) //Templated members do not need to be exported you silly compiler
 #endif
 
 #ifdef __GNUC__
-	#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-	#pragma GCC diagnostic ignored "-Wunused-result"
+# pragma GCC diagnostic ignored "-Wunknown-pragmas"
+# pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
 //Naming convention fix for old GCC
 #if defined(__GNUC__) && __GNUC__ < 3
-	#define FIX_SYMBOL(t) __asm__(#t)
+# define FIX_SYMBOL(t) __asm__(#t)
 #else
-	#define FIX_SYMBOL(t)  
+# define FIX_SYMBOL(t)  
 #endif
 
 #ifdef _WINDOWS
-	#define LINUX_SYMBOL(t) 
+# define LINUX_SYMBOL(t) 
 #else
-	#define LINUX_SYMBOL(t) __asm__(#t)
+# define LINUX_SYMBOL(t) __asm__(#t)
+#endif
+
+#if (defined(unix) || defined(__unix__) || defined(__unix)) && !defined(_UNIX)
+# define _UNIX 1
 #endif
 
 
@@ -127,31 +131,31 @@ static_assert( sizeof(int64)  == 8, "Bad int64 size");
 //Compiler dependant
 //C++11 features
 #ifdef DISABLE_CPP11
-	#define nullptr 0
-	#define constexpr const
-	#define static_assert(a,b) 
-	#define NO_CPP11_TEMPLATES
+# define nullptr 0
+# define constexpr const
+# define static_assert(a,b) 
+# define NO_CPP11_TEMPLATES
 #endif
 
 
 #ifndef Ccheck
-	#if DO_CHECK
-		#define Ccheck(expr)  {if(!(expr)) CFailAssert( #expr, __FILE__, __LINE__ );}
-	#else
-		#define Ccheck(expr) 0
-	#endif
+# if DO_CHECK
+#  define Ccheck(expr)  {if(!(expr)) CFailAssert( #expr, __FILE__, __LINE__ );}
+# else
+#  define Ccheck(expr) 0
+# endif
 #endif
 
 #ifndef _STRING_
-	#ifdef _BASIC_STRING_H
-		#define _STRING_
-	#endif
+# ifdef _BASIC_STRING_H
+#  define _STRING_
+# endif
 #endif
 
 #ifndef _VECTOR_
-	#ifdef _GLIBCXX_VECTOR
-		#define _VECTOR_
-	#endif
+# ifdef _GLIBCXX_VECTOR
+#  define _VECTOR_
+# endif
 #endif
 
 

@@ -100,7 +100,7 @@ uint8* CStringBuffer( size_t BufferSize)
 
 #define EINVAL 22
 #define ERANGE 34
-template <typename CHARSRC,typename CHARDEST> FORCEINLINE int templ_strcpy_s( CHARDEST* Dest, uint32 DestChars, const CHARSRC* Src)
+template <typename CHARSRC,typename CHARDEST> FORCEINLINE int templ_strcpy_s( CHARDEST* Dest, size_t DestChars, const CHARSRC* Src)
 {
 	uint32 i;
 	if( !Dest || !DestChars )
@@ -117,11 +117,11 @@ template <typename CHARSRC,typename CHARDEST> FORCEINLINE int templ_strcpy_s( CH
 	Dest[0] = '\0';
 	return ERANGE;
 }
-int CStrcpy8_s ( char*   Dest, uint32 DestChars, const char*   Src) { return templ_strcpy_s( Dest, DestChars, Src); }
-int CStrcpy16_s( char16* Dest, uint32 DestChars, const char16* Src) { return templ_strcpy_s( Dest, DestChars, Src); }
-int CStrcpy32_s( char32* Dest, uint32 DestChars, const char32* Src) { return templ_strcpy_s( Dest, DestChars, Src); }
+int CStrcpy8_s ( char*   Dest, size_t DestChars, const char*   Src) { return templ_strcpy_s( Dest, DestChars, Src); }
+int CStrcpy16_s( char16* Dest, size_t DestChars, const char16* Src) { return templ_strcpy_s( Dest, DestChars, Src); }
+int CStrcpy32_s( char32* Dest, size_t DestChars, const char32* Src) { return templ_strcpy_s( Dest, DestChars, Src); }
 
-int CStrcpy_g_s( void* Dest, uint32 DestBytes, uint32 DestChars, const void* Src, uint32 SrcBytes)
+int CStrcpy_g_s( void* Dest, size_t DestBytes, size_t DestChars, const void* Src, size_t SrcBytes)
 {
 	switch( DestBytes)
 	{

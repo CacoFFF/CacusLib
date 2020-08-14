@@ -12,7 +12,7 @@ int32 volatile COpenThreads = 0;
 
 
 
-void CFixedArray::Setup( uint32 NewNum, size_t ElementSize)
+void CFixedArray::Setup( size_t NewNum, size_t ElementSize)
 {
 	if ( NewNum != Num )
 	{
