@@ -122,6 +122,32 @@ public:
 			return (const wchar_t*)wBuffer;
 		}
 	}
+
+public:
+	class TWriter
+	{
+	public:
+		TWriter()
+			: Pos(0)
+		{}
+
+		TWriter& operator<<( const CHAR* Text)
+		{
+			CHAR* BufPtr = *Buffer;
+			while ( *Text && (Pos < N-1) )
+				BufPtr[Pos++] = *Text++;
+			BufPtr[Pos] = '\0';
+			return *this;
+		}
+		// TODO: Add other types for <<
+
+		size_t GetPos() const                   { return Pos; }
+		TCharBuffer<N,CHAR>& GetBuffer()		{ return Buffer; }
+
+	private:
+		size_t Pos;
+		TCharBuffer<N,CHAR> Buffer;
+	};
 };
 #ifndef NO_CPP11_TEMPLATES
 	template <size_t N> using TChar8Buffer    = TCharBuffer<N, char>;

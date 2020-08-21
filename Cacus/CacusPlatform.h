@@ -137,6 +137,9 @@ static_assert( sizeof(int64)  == 8, "Bad int64 size");
 # define NO_CPP11_TEMPLATES
 #endif
 
+#ifndef check
+# define check(expr) {if (!(expr)) DebugCallback(#expr,CACUS_CALLBACK_EXCEPTION); }
+#endif
 
 #ifndef Ccheck
 # if DO_CHECK

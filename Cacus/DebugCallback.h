@@ -20,6 +20,7 @@
 #define CACUS_CALLBACK_TEST       0x00000020 //Unit tests send these notifications
 #define CACUS_CALLBACK_MEMORY     0x00000040
 #define CACUS_CALLBACK_IO         0x00000080
+#define CACUS_CALLBACK_NET        0x00000100
 #define CACUS_CALLBACK_EXCEPTION  0x00010000
 #define CACUS_CALLBACK_ALL        0x0FFFFFFF
 

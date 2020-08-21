@@ -301,6 +301,8 @@
     <ClCompile Include="Private\CircularBuffer.cpp" />
     <ClCompile Include="Private\COutputDevicePrintf.cpp" />
     <ClCompile Include="Private\DebugCallback.cpp" />
+    <ClCompile Include="Private\IPv6.cpp" />
+    <ClCompile Include="Private\NetworkSocket.cpp" />
     <ClCompile Include="Private\Parsers.cpp" />
     <ClCompile Include="Private\StackUnwinder.cpp" />
     <ClCompile Include="Private\Thread.cpp" />
@@ -326,11 +328,14 @@
     <ClInclude Include="Cacus\DebugCallback.h" />
     <ClInclude Include="Cacus\DynamicLinking.h" />
     <ClInclude Include="Cacus\Internal\CParser.h" />
+    <ClInclude Include="Cacus\IPv6.h" />
     <ClInclude Include="Cacus\Math\CFVector4.h" />
     <ClInclude Include="Cacus\Math\CIVector2.h" />
     <ClInclude Include="Cacus\Math\CIVector4.h" />
     <ClInclude Include="Cacus\Math\Constants.h" />
+    <ClInclude Include="Cacus\Math\General.h" />
     <ClInclude Include="Cacus\Math\Math.h" />
+    <ClInclude Include="Cacus\NetworkSocket.h" />
     <ClInclude Include="Cacus\StackUnwinder.h" />
     <ClInclude Include="Cacus\TCharBuffer.h" />
     <ClInclude Include="Cacus\TimeStamp.h" />

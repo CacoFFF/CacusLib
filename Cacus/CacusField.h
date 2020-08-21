@@ -680,6 +680,7 @@ template< typename T > void DataToObject( const char* Data, T& Into, EParseType 
 }
 
 
+#ifdef _STRING_
 template< typename T > std::string ObjectToData( const T& From, EParseType ExportType, int DeltaDefaults=0)
 {
 	auto* Outer = CreateProperty("",nullptr,*(T*)nullptr,PF_Inner);
@@ -688,6 +689,7 @@ template< typename T > std::string ObjectToData( const T& From, EParseType Expor
 	delete Outer;
 	return Result;
 }
+#endif
 
 template< typename T1, typename T2 > void ObjectToObject( const T1& From, T2& Into)
 {
