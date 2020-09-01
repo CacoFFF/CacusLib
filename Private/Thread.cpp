@@ -26,6 +26,8 @@
 
 #endif
 
+#include "CacusBase.h"
+
 #include "AppTime.h"
 #include "Atomics.h"
 #include "CacusThread.h"

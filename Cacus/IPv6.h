@@ -17,7 +17,7 @@ extern "C"
 };
 
 //Data in host byte order!
-class CACUS_API IPAddress
+class IPAddress
 {
 	union
 	{
@@ -28,11 +28,11 @@ class CACUS_API IPAddress
 	};
 
 public:
-	static const IPAddress Any; //::
-	static const IPAddress InternalLoopback; //::1
-	static const IPAddress InternalLoopback_v4; //::127.0.0.1
-	static const IPAddress LanBroadcast; //FF02::1
-	static const IPAddress LanBroadcast_v4; //255.255.255.255
+	CACUS_API static const IPAddress Any; //::
+	CACUS_API static const IPAddress InternalLoopback; //::1
+	CACUS_API static const IPAddress InternalLoopback_v4; //::127.0.0.1
+	CACUS_API static const IPAddress LanBroadcast; //FF02::1
+	CACUS_API static const IPAddress LanBroadcast_v4; //255.255.255.255
 
 public:
 	IPAddress()
@@ -114,7 +114,7 @@ public:
 	}
 
 	// Exports to text using the internal string buffer (does not require deallocation)
-	const char* operator*() const;
+	CACUS_API const char* operator*() const;
 
 #ifdef CORE_API
 	// Unreal Tournament
@@ -175,7 +175,7 @@ public:
 	}
 
 	// Exports to text using the internal string buffer (does not require deallocation)
-	const char* operator*() const;
+	CACUS_API const char* operator*() const;
 
 #ifdef CORE_API
 	// Unreal Tournament

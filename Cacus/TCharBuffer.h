@@ -8,6 +8,10 @@
 #ifndef USES_CACUS_TCHARBUF
 #define USES_CACUS_TCHARBUF
 
+#ifndef USES_CACUS_BASE
+	#error "CacusBase.h not included"
+#endif
+
 #include "CacusString.h"
 
 template< size_t N, typename CHAR> class TCharBuffer
@@ -149,12 +153,22 @@ public:
 		TCharBuffer<N,CHAR> Buffer;
 	};
 };
-#ifndef NO_CPP11_TEMPLATES
-	template <size_t N> using TChar8Buffer    = TCharBuffer<N, char>;
-	template <size_t N> using TChar16Buffer   = TCharBuffer<N, char16>;
-	template <size_t N> using TChar32Buffer   = TCharBuffer<N, char32>;
-	template <size_t N> using TCharWideBuffer = TCharBuffer<N, wchar_t>;
-#endif
+
+template <size_t N> using TChar8Buffer    = TCharBuffer<N, char>;
+template <size_t N> using TChar16Buffer   = TCharBuffer<N, char16>;
+template <size_t N> using TChar32Buffer   = TCharBuffer<N, char32>;
+template <size_t N> using TCharWideBuffer = TCharBuffer<N, wchar_t>;
+
+
+//*****************************************
+// Character stream template implementation
+namespace Cacus
+{
+	template< size_t N , typename CHAR > inline const CHAR* TGetCharStream( const TCharBuffer<N,CHAR>& String)
+	{
+		return *String;
+	}
+};
 
 
 #endif

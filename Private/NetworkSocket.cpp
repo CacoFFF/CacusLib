@@ -33,6 +33,8 @@
 	#endif
 #endif
 
+#include "CacusBase.h"
+
 #include "CacusThread.h"
 #include "CacusString.h"
 #include "NetworkSocket.h"
@@ -196,6 +198,8 @@ uint16 SocketGeneric::BindPort( IPEndpoint& LocalAddress, int NumTries, int Incr
 				}
 				return LocalAddress.Port;
 			}
+			else
+				DebugCallback( CSprintf( "Failed to bind IPv6 port %i (%s)", (int)LocalAddress.Port, Socket::ErrorText(LastError)), CACUS_CALLBACK_NET);
 		}
 		else
 		{
@@ -212,6 +216,8 @@ uint16 SocketGeneric::BindPort( IPEndpoint& LocalAddress, int NumTries, int Incr
 				}
 				return LocalAddress.Port;
 			}
+			else
+				DebugCallback( CSprintf( "Failed to bind IPv4 port %i (%s)", (int)LocalAddress.Port, Socket::ErrorText(LastError)), CACUS_CALLBACK_NET);
 		}
 
 		if( LocalAddress.Port == 0 ) //Random binding failed/went full circle in port range
@@ -552,7 +558,15 @@ int32 SocketBSD::ErrorCode()
 	Other.
 ----------------------------------------------------------------------------*/
 
-IPAddress SocketGeneric::ResolveHostname( char* HostName, size_t HostNameSize, bool bOnlyParse, bool bCallbackException)
+const char* SocketGeneric::GetHostname()
+{
+	TChar8Buffer<257> LocalBuffer;
+	if ( gethostname( *LocalBuffer, (int)LocalBuffer.Size()) )
+		return "";
+	return CopyToBuffer(*LocalBuffer);
+}
+
+IPAddress SocketGeneric::ResolveHostname( const char* HostName, bool bOnlyParse, bool bCallbackException)
 {
 	addrinfo Hint, Hint4, *Result;
 	memset( &Hint, 0, sizeof(Hint));
@@ -574,13 +588,17 @@ IPAddress SocketGeneric::ResolveHostname( char* HostName, size_t HostNameSize, b
 	const uint32 CACUS_CALLBACK_FLAGS = CACUS_CALLBACK_NET | (bCallbackException ? CACUS_CALLBACK_EXCEPTION : 0);
 
 	//Purposely failing to pass HostName will trigger 'gethostname' (useful for init)
+	const char* LocalHostName = nullptr;
 	if ( (*HostName == '\0') || !_stricmp(HostName,"any") )
 	{
-		if ( gethostname( HostName, (int)HostNameSize) )
+		LocalHostName = GetHostname();
+		if ( *LocalHostName == '\0' )
 		{
 			DebugCallback( CSprintf( "gethostname failed (%s)", Socket::ErrorText()), CACUS_CALLBACK_FLAGS);
 			return Address;
 		}
+		HostName = LocalHostName;
+		DebugCallback( CSprintf("Local hostname: %s", LocalHostName), CACUS_CALLBACK_NET);
 	}
 
 	int32 ErrorCode = getaddrinfo( HostName, NULL, &Hint, &Result);

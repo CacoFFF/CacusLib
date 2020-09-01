@@ -173,6 +173,12 @@
     <ClInclude Include="Cacus\Math\General.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Cacus\CacusBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cacus\Internal\UnrealTournament.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CacusLib.rc">

@@ -1,5 +1,6 @@
+#include "CacusBase.h"
+
 #include "CacusField.h"
-#include "CacusPlatform.h"
 #include "AppTime.h"
 #include "TimeStamp.h"
 #include "StackUnwinder.h"
@@ -276,14 +277,14 @@ FTimestampDateTime FTimestampDateTime::Parse( const char* Str)
 
 bool FTimestampDateTime::LeapYear(uint32 Year)
 {
-	if ( Year % 4 == 0 ) //Year not divisible by 4
-		return false;
-	else if ( Year % 100 == 0 ) //Year not divisible by 100
+	if      ( Year % 400 == 0 ) //Divisible by 400
 		return true;
-	else if ( Year % 400 == 0 ) //Year not divisible by 400
+	else if ( Year % 100 == 0 ) //Divisible by 100
 		return false;
+	else if ( Year %   4 == 0 ) //Divisible by 4
+		return true;
 	else
-		return true;
+		return false;
 }
 
 uint32 FTimestampDateTime::DaysPerMonth( uint32 Month, uint32 Year)

@@ -1,3 +1,4 @@
+#include "CacusBase.h"
 
 #include "CacusOutputDevice.h"
 #include <wchar.h>

@@ -41,7 +41,6 @@ enum ECharType
 	CHTYPE_AlNum   = CHTYPE_Alpha | CHTYPE_Digit,
 };
 
-
 //Compiler safety enforcer
 template<typename C> inline constexpr bool CheckCharType()           { return false; } 
 template<> inline constexpr bool CheckCharType<char>()               { return true; }

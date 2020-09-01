@@ -11,6 +11,7 @@
 	or more of the necessary sleeping methods to reach the next timer.
 =============================================================================*/
 
+#include "CacusBase.h"
 
 #include "AppTime.h"
 #include "Atomics.h"
@@ -19,7 +20,7 @@
 
 
 #ifdef _WINDOWS
-# include "DynamicLinking.h"
+#include "DynamicLinking.h"
 
 typedef uint32 (__stdcall *proc_NtGetTickCount)();
 typedef int32  (__stdcall *proc_NtQueryTimerResolution)(uint32*,uint32*,uint32*);

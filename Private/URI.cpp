@@ -1,7 +1,9 @@
 
+#include "CacusBase.h"
+
 #include "CacusField.h"
 #include "URI.h"
-#include "StackUnwinder.h"
+//#include "StackUnwinder.h"
 #include "DebugCallback.h"
 
 
@@ -535,7 +537,7 @@ unsigned short URI::DefaultPort( const char* Scheme)
 //
 void URI::Parse( const char* Address)
 {
-	guard(URI::Parse)
+//	guard(URI::Parse)
 	// Move the contents of this URI into 'Base'
 	// This will temporarily become the 'Reference URI'
 	// Until it's time to become the 'Transform URI' (result of parsing)
@@ -602,7 +604,7 @@ void URI::Parse( const char* Address)
 	if ( authority )
 		CFree( (void*)authority);
 	//Base and it's remaining elements is destructed
-	unguard;
+//	unguard;
 }
 //========= URI::Parse - end ==========//
 

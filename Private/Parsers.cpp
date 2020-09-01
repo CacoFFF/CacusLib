@@ -1,7 +1,6 @@
+#include "CacusBase.h"
 
-#include "CacusOutputDevice.h"
 #include "CacusField.h"
-#include "StackUnwinder.h"
 #include "DebugCallback.h"
 
 bool CProperty::CParserLog = false;
@@ -265,7 +264,6 @@ void CParserElement::ParseObject( const CStruct* Struct, void*& Into) const
 
 void CParserElement::ParseObjects( const CStruct* Struct, CArray<void*>& Into) const
 {
-	guard(FParserElement::ParseObjects);
 	if ( Flags & PEF_Array )
 	{
 		uint32 i=0;
@@ -277,7 +275,6 @@ void CParserElement::ParseObjects( const CStruct* Struct, CArray<void*>& Into) c
 			Elem->ParseObject( Struct, Into[i++]);
 		}
 	}
-	unguard;
 }
 
 void CParserElement::ExportObject( const CStruct* Struct, void* From, bool Root)
@@ -365,7 +362,7 @@ bool CJSONParser::ParseKey( CParserElement* Parent)
 			CParserElement* Element = new CParserElement(*Parent,TKey); //Properties are unordered
 			return ParseValue( Element );
 		}
-		Cdebugf( "FJSONParser::ParseKey -> Error (Key=%s)", TKey ? TKey : "null");
+		DebugCallback( CSprintf( "CJSONParser::ParseKey -> Error (Key=%s)", TKey ? TKey : "null"), CACUS_CALLBACK_PARSER );
 	}
 	return false;
 }
@@ -379,7 +376,7 @@ bool CJSONParser::ParseValue( CParserElement* Element)
 		return ParseArray( Element);
 	else if ( *Data == ',' )
 	{
-		Cdebug( "FOUND COMMA!!!");
+		DebugCallback( "FOUND COMMA!!!", CACUS_CALLBACK_PARSER );
 	}
 	//Empty value
 	else //Token
@@ -400,7 +397,7 @@ bool CJSONParser::ParseValue( CParserElement* Element)
 			}
 			return true;
 		}
-		Cdebugf( "FJSONParser::ParseValue -> Couldn't parse value for %s [%s]", Element->Key.c_str(), Element->Value.c_str() );
+		DebugCallback( CSprintf( "CJSONParser::ParseValue -> Couldn't parse value for %s [%s]", Element->Key.c_str(), Element->Value.c_str() ), CACUS_CALLBACK_PARSER );
 	}
 	return false;
 }
@@ -425,9 +422,9 @@ bool CJSONParser::ParseObject( CParserElement* Element)
 
 			if ( (PropCount++ != 0) && (*Data++ != ',') )
 			{
-				Cdebugf( "FJSONParser::ParseObject -> New child failure in object %s", Element->Key.c_str() );
+				DebugCallback( CSprintf("CJSONParser::ParseObject -> New child failure in object %s", Element->Key.c_str()), CACUS_CALLBACK_PARSER );
 				TChar8Buffer<32> TmpBuf = Data;
-				Cdebugf( "FJSONParser::ParseObject -> Next data in parsing line is [%s ...]", *TmpBuf);
+				DebugCallback( CSprintf("CJSONParser::ParseObject -> Next data in parsing line is [%s ...]", *TmpBuf), CACUS_CALLBACK_PARSER );
 				break;
 			}
 
@@ -457,7 +454,7 @@ bool CJSONParser::ParseArray( CParserElement* Container)
 
 			if ( (ArrayNum++ != 0) && (*Data++ != ',') )
 			{
-				Cdebugf( "FJSONParser::ParseArray -> New child failure in array variable %s", Container->Key.c_str() );
+				DebugCallback( CSprintf("CJSONParser::ParseArray -> New child failure in array variable %s", Container->Key.c_str()), CACUS_CALLBACK_PARSER );
 				break;
 			}
 
@@ -585,7 +582,7 @@ void CProperty::Import( void* Into, const CParserElement& Elem) const
 {
 #ifdef _STRING_
 	if ( !Parse( Into, Elem.Value.c_str() ) )
-		Cdebugf("Import failed for element [%s] with value %s", Elem.Key.c_str(), Elem.Value.c_str());
+		DebugCallback( CSprintf("Import failed for element [%s] with value %s", Elem.Key.c_str(), Elem.Value.c_str()), CACUS_CALLBACK_PARSER );
 #endif
 }
 

@@ -63,9 +63,11 @@ public:
 	uint16 BindPort( IPEndpoint& LocalAddress, int NumTries=1, int Increment=1);
 	ESocketState CheckState( ESocketState CheckFor, double WaitTime=0);
 
-	// Passing an empty HostName fills the value with local address.
+	// Prints to circular buffer
+	static const char* GetHostname();
+
 	// Return value defaults to IPAddress::Any
-	static IPAddress ResolveHostname( char* HostName, size_t HostNameSize, bool bOnlyParse, bool bCallbackException=false);
+	static IPAddress ResolveHostname( const char* HostName, bool bOnlyParse=false, bool bCallbackException=false);
 };
 
 #ifdef _WINDOWS
@@ -76,8 +78,7 @@ public:
 	static const int32 EPortUnreach;
 	static const char* API;
 
-	SocketWindows() {}
-	SocketWindows( bool bTCP) : SocketGeneric(bTCP) {}
+	using SocketGeneric::SocketGeneric;
 
 	static bool Init();
 	static const char* ErrorText( int32 Code=-1);
@@ -101,8 +102,7 @@ public:
 	static const int32 EPortUnreach;
 	static const char* API;
 
-	SocketBSD() {}
-	SocketBSD( bool bTCP) : SocketGeneric(bTCP) {}
+	using SocketGeneric::SocketGeneric;
 
 	static const char* ErrorText( int32 Code=-1);
 	static int32 ErrorCode();

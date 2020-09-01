@@ -10,6 +10,8 @@
 #undef check
 #define check() 
 
+#include "CacusBase.h"
+
 #include "IPv6.h"
 #include "TCharBuffer.h"
 

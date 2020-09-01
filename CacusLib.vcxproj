@@ -316,11 +316,13 @@
   <ItemGroup>
     <ClInclude Include="Cacus\AppTime.h" />
     <ClInclude Include="Cacus\Atomics.h" />
+    <ClInclude Include="Cacus\CacusBase.h" />
     <ClInclude Include="Cacus\CacusField.h" />
     <ClInclude Include="Cacus\CacusGlobals.h" />
     <ClInclude Include="Cacus\CacusMem.h" />
     <ClInclude Include="Cacus\CacusOutputDevice.h" />
     <ClInclude Include="Cacus\CacusPlatform.h" />
+    <ClInclude Include="Cacus\Internal\UnrealTournament.h" />
     <ClInclude Include="Cacus\CacusString.h" />
     <ClInclude Include="Cacus\CacusTemplate.h" />
     <ClInclude Include="Cacus\CacusThread.h" />

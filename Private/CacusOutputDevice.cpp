@@ -1,4 +1,6 @@
 
+#include "CacusBase.h"
+
 #include "CacusTemplate.h"
 #include "CacusGlobals.h"
 #include "CacusString.h"

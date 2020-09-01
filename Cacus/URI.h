@@ -11,8 +11,6 @@
 #ifndef USES_CACUS_URI
 #define USES_CACUS_URI
 
-#include "CacusPlatform.h"
-
 /** RFC 2396 notes - https://www.ietf.org/rfc/rfc2396.txt
 
 3.1 >> Schemes treat upper case letter as lower case
@@ -96,7 +94,6 @@ template<> inline CProperty* CreateProperty<URI>( const char* Name, CStruct* Par
 {
 	return CP_CREATE(PropertyURI);
 }
-
 #endif
 
 
