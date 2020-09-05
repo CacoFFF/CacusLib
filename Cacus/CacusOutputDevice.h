@@ -1,7 +1,12 @@
-#ifndef USES_CACUS_OUTPUT
-#define USES_CACUS_OUTPUT
 
-#include "CacusPlatform.h"
+#ifdef CACUSLIB_DISABLE_OUTPUTDEVICE
+#define USES_CACUS_OUTPUT 0
+#endif
+
+#ifndef USES_CACUS_OUTPUT
+#define USES_CACUS_OUTPUT 1
+
+#include "CacusBase.h"
 #include "TCharBuffer.h"
 
 class CACUS_API COutputDevice

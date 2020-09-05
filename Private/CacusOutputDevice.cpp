@@ -1,10 +1,12 @@
 
 #include "CacusBase.h"
+#include "CacusOutputDevice.h"
+
+#if USES_CACUS_OUTPUT
 
 #include "CacusTemplate.h"
 #include "CacusGlobals.h"
 #include "CacusString.h"
-#include "CacusOutputDevice.h"
 #include "AppTime.h"
 #include "Atomics.h"
 
@@ -196,3 +198,5 @@ void COutputDeviceFileUTF8::Serialize32( const char32* Data)
 {
 	COUT_UTF8_STANDARD
 }
+
+#endif

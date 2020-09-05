@@ -116,6 +116,9 @@ const char *IPAddress::operator*() const
 			}
 		}
 
+	if ( LocalWriter.GetBuffer() == ":")
+		LocalWriter << ":";
+
 	return CopyToBuffer(*LocalWriter.GetBuffer());
 }
 

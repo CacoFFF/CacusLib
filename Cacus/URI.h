@@ -74,7 +74,7 @@ private:
 	void Parse( const char* Address);
 };
 
-#ifdef USES_CACUS_FIELD
+#if USES_CACUS_FIELD
 class CACUS_API PropertyURI : public CProperty
 {
 	DECLARE_FIELD(PropertyURI,CProperty)

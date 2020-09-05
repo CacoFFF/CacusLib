@@ -6,10 +6,12 @@
 	Allows high level sybsystems to operate on low level objects and primitives.
 =============================================================================*/
 
-
+#ifdef CACUSLIB_DISABLE_FIELD
+#define USES_CACUS_FIELD 0
+#endif
 
 #ifndef USES_CACUS_FIELD
-#define USES_CACUS_FIELD
+#define USES_CACUS_FIELD 1
 
 #include "Atomics.h"
 #include "CacusTemplate.h"

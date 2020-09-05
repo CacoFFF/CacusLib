@@ -1,6 +1,8 @@
 #include "CacusBase.h"
-
 #include "CacusField.h"
+
+#if USES_CACUS_FIELD
+
 #include "DebugCallback.h"
 
 bool CProperty::CParserLog = false;
@@ -733,3 +735,4 @@ void PropertyStructPtr::Export( void* From, CParserElement& Elem) const
 #endif
 }
 
+#endif

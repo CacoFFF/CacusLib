@@ -4,7 +4,6 @@
 
 #ifndef CACUS_USE_TESTS
 
-void TestMain(){}
 void TestCallbacks(){}
 void TestCharBuffer(){}
 void TestTimer(){}

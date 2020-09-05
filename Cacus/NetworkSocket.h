@@ -28,10 +28,19 @@ enum ESocketState
 	Socket abstraction (win32/unix).
 ----------------------------------------------------------------------------*/
 
+#ifdef _WINDOWS
+class SocketWindows;
+typedef SocketWindows CSocket;
+#else
+class SocketBSD;
+typedef SocketBSD CSocket;
+#endif
+
+
 class CACUS_API SocketGeneric
 {
 protected:
-	int_p Socket;
+	int_p SocketDescriptor;
 public:
 	int32 LastError;
 public:
@@ -46,18 +55,21 @@ public:
 	static int32 ErrorCode()                {return 0;}
 
 	bool Close()                            {SetInvalid(); return false;}
-	bool IsInvalid()                        {return Socket==InvalidSocket;}
-	void SetInvalid()                       {Socket=InvalidSocket;}
+	bool IsInvalid()                        {return SocketDescriptor==InvalidSocket;}
+	void SetInvalid()                       {SocketDescriptor=InvalidSocket;}
 	bool SetNonBlocking()                   {return true;}
 	bool SetReuseAddr( bool bReUse=true)    {return true;}
 	bool SetLinger()                        {return true;}
 	bool SetRecvErr()                       {return false;}
 
+	bool Accept( IPEndpoint& Source, CSocket& NewSocket);
 	bool Connect( IPEndpoint& RemoteAddress);
 	bool Send( const uint8* Buffer, int32 BufferSize, int32& BytesSent);
 	bool SendTo( const uint8* Buffer, int32 BufferSize, int32& BytesSent, const IPEndpoint& Dest);
 	bool Recv( uint8* Data, int32 BufferSize, int32& BytesRead); //Implement flags later
 	bool RecvFrom( uint8* Data, int32 BufferSize, int32& BytesRead, IPEndpoint& Source); //Implement flags later, add IPv6 type support
+	bool Poll();
+	bool Listen( int32 Backlog);
 	bool EnableBroadcast( bool bEnable=1);
 	void SetQueueSize( int32 RecvSize, int32 SendSize);
 	uint16 BindPort( IPEndpoint& LocalAddress, int NumTries=1, int Increment=1);
@@ -66,7 +78,8 @@ public:
 	// Prints to circular buffer
 	static const char* GetHostname();
 
-	// Return value defaults to IPAddress::Any
+	// Use "all", "any" for IPAddress::Any
+	// Use "" to select primary network adapter
 	static IPAddress ResolveHostname( const char* HostName, bool bOnlyParse=false, bool bCallbackException=false);
 };
 
@@ -91,7 +104,6 @@ public:
 
 	ESocketState CheckState( ESocketState CheckFor, double WaitTime=0);
 };
-typedef SocketWindows Socket;
 
 
 #else
@@ -113,7 +125,6 @@ public:
 	bool SetLinger();
 	bool SetRecvErr();
 };
-typedef SocketBSD Socket;
 
 
 #endif

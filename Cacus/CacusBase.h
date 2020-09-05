@@ -12,6 +12,15 @@
 
 #include "CacusPlatform.h"
 
+//*******************************************************************
+// Features on this CacusLib build
+//
+// Define any of these in your preprocessor directives in order
+// to limit the features on CacusLib needed for your program
+//
+// CACUSLIB_DISABLE_FIELD
+// CACUSLIB_DISABLE_OUTPUTDEVICE
+//
 
 //*******************************************************************
 // Character types (overridable)

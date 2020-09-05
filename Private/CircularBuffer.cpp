@@ -10,7 +10,7 @@ struct _cb_header_
 
 CCircularBuffer* CircularAllocate( size_t BufferSize)
 {
-	_cb_header_* Buf = (_cb_header_*)CMalloc( BufferSize);
+	_cb_header_* Buf = (_cb_header_*)CMalloc( BufferSize + sizeof(_cb_header_) );
 	Buf->Lock = 0;
 	Buf->BufferSize = BufferSize;
 	Buf->CurPos = 0;

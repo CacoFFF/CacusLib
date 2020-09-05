@@ -31,13 +31,15 @@ _CRT_SECURE_NO_WARNINGS
 
 //***************************************
 //          API
-#if _WINDOWS
-	#define CACUS_API __declspec(dllimport)
-#else
-	#if __GNUC__ >= 4
-		#define CACUS_API __attribute__ ((visibility ("default")))
+#ifndef CACUS_API
+	#if _WINDOWS
+		#define CACUS_API __declspec(dllimport)
 	#else
-		#define CACUS_API
+		#if __GNUC__ >= 4
+			#define CACUS_API __attribute__ ((visibility ("default")))
+		#else
+			#define CACUS_API
+		#endif
 	#endif
 #endif
 

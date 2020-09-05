@@ -14,17 +14,12 @@ _WINDOWS
 _CRT_SECURE_NO_WARNINGS
 */
 
-#ifndef DISABLE_STDLIB11_FEATURES
-	#define DISABLE_STDLIB11_FEATURES 1
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if !DISABLE_STDLIB11_FEATURES
-	#include <vector>
-	#include <string>
-#endif
+#include <vector>
+#include <string>
 
 #ifdef __GNUC__
 	#include <unistd.h>

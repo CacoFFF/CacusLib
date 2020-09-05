@@ -26,7 +26,7 @@ struct CACUS_API FTimestampDateTime
 	static uint32 DaysPerMonth( uint32 Month, uint32 Year);
 };
 
-#ifdef USES_CACUS_FIELD
+#if USES_CACUS_FIELD
 class CACUS_API PropertyTimestampDateTime : public CProperty
 {
 	DECLARE_FIELD(PropertyTimestampDateTime,CProperty)

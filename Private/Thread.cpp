@@ -94,6 +94,8 @@ ENTRY_TYPE CThread::CThreadEntryContainer( void* Arg)
 
 CThread::CThread( const ENTRY_POINT InEntryPoint, void* InEntryArg, uint32 InFlags)
 {
+	FPlatformTime::InitTiming();
+
 	memset( this, 0, (size_t)&EntryArg - (size_t)this);
 	EntryArg = InEntryArg;
 	EntryPoint = InEntryPoint;
@@ -179,7 +181,11 @@ int CThread::WaitFinish( float MaxWait)
 	{
 		Sleep(1);
 		if ( (MaxWait != 0) && (FPlatformTime::Seconds()-StartTime >= MaxWait) )
-			break;
+		{
+			double TimePassed = FPlatformTime::Seconds()-StartTime;
+			if ( TimePassed < 0 || TimePassed >= MaxWait )
+				break;
+		}
 	}
 	return tId == 0;
 }

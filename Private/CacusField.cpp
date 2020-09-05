@@ -1,8 +1,16 @@
-#include "CacusBase.h"
+/*=============================================================================
+	CacusField.cpp
+	Author: Fernando Velázquez
 
+	Class/Struct and Property descriptor definitions.
+=============================================================================*/
+
+#include "CacusBase.h"
 #include "CacusField.h"
+
+#if USES_CACUS_FIELD
+
 #include "TimeStamp.h"
-#include "StackUnwinder.h"
 #include "DebugCallback.h"
 
 
@@ -433,3 +441,4 @@ const char* PropertyTimestampDateTime::String( void* Object) const
 	return CopyToBuffer( **GetProp<Primitive>(Object) );
 }
 
+#endif

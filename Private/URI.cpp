@@ -1,7 +1,8 @@
 
 #include "CacusBase.h"
 
-#include "CacusField.h"
+#include "CacusTemplate.h"
+#include "TCharBuffer.h"
 #include "URI.h"
 //#include "StackUnwinder.h"
 #include "DebugCallback.h"
@@ -641,6 +642,9 @@ static void SetText( const char*& Val, const char* NewVal)
 //************* PROPERTY IMPLEMENTATION ***************
 //*****************************************************
 
+#include "CacusField.h"
+
+#if USES_CACUS_FIELD
 bool PropertyURI::Parse( void* Into, const char* From) const
 {
 	Primitive& Prop = GetProp<Primitive>(Into);
@@ -672,3 +676,4 @@ const char* PropertyURI::String( void* Object) const
 {
 	return GetProp<Primitive>(Object).operator*();
 }
+#endif
