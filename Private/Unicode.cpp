@@ -22,7 +22,7 @@ template<typename CHAR> size_t templ_utf8_encoded_len( const CHAR* Src)
 	size_t i=0;
 	while ( int32 SC=*Src )
 	{
-		register uint32 C = *(uint32*)(&SC);
+		uint32 C = *(uint32*)(&SC);
 		if ( C < 0x80UL )
 			i++;
 		else if ( C < 0x800UL )

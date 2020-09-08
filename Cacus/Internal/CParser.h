@@ -36,7 +36,7 @@ public:
 
 	//Child constructor (attach at front of linked list)
 	CParserElement( CParserElement& Parent, const char* InKeyName="")
-		: Next(Parent.Children), Children(nullptr), TypeName(nullptr), Key(InKeyName), Flags(Parent.Flags&PEF_Inherit)
+		: Next(Parent.Children), Children(nullptr), Key(InKeyName), TypeName(nullptr), Flags(Parent.Flags&PEF_Inherit)
 	{ Parent.Children = this; }
 
 	~CParserElement();

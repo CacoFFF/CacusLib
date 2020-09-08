@@ -3,6 +3,7 @@
 
 #include "CacusTemplate.h"
 #include "TCharBuffer.h"
+#include "CacusField.h"
 #include "URI.h"
 //#include "StackUnwinder.h"
 #include "DebugCallback.h"
@@ -641,8 +642,6 @@ static void SetText( const char*& Val, const char* NewVal)
 //*****************************************************
 //************* PROPERTY IMPLEMENTATION ***************
 //*****************************************************
-
-#include "CacusField.h"
 
 #if USES_CACUS_FIELD
 bool PropertyURI::Parse( void* Into, const char* From) const

@@ -3,7 +3,7 @@
 
 	Socket instance definition.
 
-	Author: Fernando Velázquez.
+	Author: Fernando Velï¿½zquez.
 =============================================================================*/
 #ifndef USES_CACUS_NETWORK_SOCKET
 #define USES_CACUS_NETWORK_SOCKET
@@ -53,6 +53,7 @@ public:
 	static bool Init();
 	static const char* ErrorText( int32 Code=-1)     {return "";}
 	static int32 ErrorCode()                {return 0;}
+	static bool IsNonBlocking( int32 Code)  {return false;}
 
 	bool Close()                            {SetInvalid(); return false;}
 	bool IsInvalid()                        {return SocketDescriptor==InvalidSocket;}
@@ -87,7 +88,6 @@ public:
 class CACUS_API SocketWindows : public SocketGeneric
 {
 public:
-	static const int32 ENonBlocking;
 	static const int32 EPortUnreach;
 	static const char* API;
 
@@ -96,7 +96,8 @@ public:
 	static bool Init();
 	static const char* ErrorText( int32 Code=-1);
 	static int32 ErrorCode();
-	
+	static bool IsNonBlocking( int32 Code);
+
 	bool Close();
 	bool SetNonBlocking();
 	bool SetReuseAddr( bool bReUse=true);
@@ -110,7 +111,6 @@ public:
 class CACUS_API SocketBSD : public SocketGeneric
 {
 public:
-	static const int32 ENonBlocking;
 	static const int32 EPortUnreach;
 	static const char* API;
 
@@ -118,6 +118,7 @@ public:
 
 	static const char* ErrorText( int32 Code=-1);
 	static int32 ErrorCode();
+	static bool IsNonBlocking( int32 Code);
 
 	bool Close();
 	bool SetNonBlocking();

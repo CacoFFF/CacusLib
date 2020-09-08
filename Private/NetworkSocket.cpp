@@ -1,6 +1,6 @@
 /*============================================================================
 	Socket.cpp
-	Author: Fernando Velázquez
+	Author: Fernando Velï¿½zquez
 
 	Definitions for platform independant abstractions for Sockets
 ============================================================================*/
@@ -41,6 +41,7 @@
 #include "CacusString.h"
 #include "NetworkSocket.h"
 #include "AppTime.h"
+#include "Atomics.h"
 #include "Math/Math.h"
 
 
@@ -107,14 +108,14 @@ bool SocketGeneric::Init()
 bool SocketGeneric::Accept( IPEndpoint& Source, CSocket& NewSocket)
 {
 	uint8 addrbuf[sizeof(sockaddr_in6)]; //Size of sockaddr_6 is 28, this should be safe for both kinds of sockets
-	int32 addrsize = sizeof(addrbuf);
+	socklen_t addrsize = sizeof(addrbuf);
 
 	SOCKET NewDescriptor = accept( SocketDescriptor, (sockaddr*)addrbuf, &addrsize);
 	if ( NewDescriptor == CSocket::InvalidSocket )
 	{
 		// Handle failure
 		int32 NewError = CSocket::ErrorCode();
-		if ( NewError != CSocket::ENonBlocking )
+		if ( !CSocket::IsNonBlocking(NewError) )
 		{
 			LastError = NewError;
 			DebugCallback( CSprintf("Socket::Accept error: %s", CSocket::ErrorText(NewError)), CACUS_CALLBACK_NET);
@@ -246,8 +247,8 @@ uint16 SocketGeneric::BindPort( IPEndpoint& LocalAddress, int NumTries, int Incr
 				if ( LocalAddress.Port == 0 ) //A random client port was requested, get it
 				{
 					sockaddr_in6 bound;
-					int32 size = sizeof(bound);
-					LastError = getsockname( SocketDescriptor, (sockaddr*)(&bound), (socklen_t*)&size);
+					socklen_t size = sizeof(bound);
+					LastError = getsockname( SocketDescriptor, (sockaddr*)(&bound), &size);
 					LocalAddress.Port = ntohs(bound.sin6_port);
 				}
 				return LocalAddress.Port;
@@ -264,8 +265,8 @@ uint16 SocketGeneric::BindPort( IPEndpoint& LocalAddress, int NumTries, int Incr
 				if ( LocalAddress.Port == 0 ) //A random client port was requested, get it
 				{
 					sockaddr_in bound;
-					int32 size = sizeof(bound);
-					LastError = getsockname( SocketDescriptor, (sockaddr*)(&bound), (socklen_t*)&size);
+					socklen_t size = sizeof(bound);
+					LastError = getsockname( SocketDescriptor, (sockaddr*)(&bound), &size);
 					LocalAddress.Port = ntohs(bound.sin_port);
 				}
 				return LocalAddress.Port;
@@ -282,6 +283,40 @@ uint16 SocketGeneric::BindPort( IPEndpoint& LocalAddress, int NumTries, int Incr
 }
 
 ESocketState SocketGeneric::CheckState( ESocketState CheckFor, double WaitTime)
+{
+	fd_set SocketSet;
+	timeval Time;
+
+	int Status = 0;
+	while ( (WaitTime >= 0) && (Status == 0) )
+	{
+		double StartTime = FPlatformTime::InitTiming();
+		Time.tv_sec = CFloor(WaitTime);
+		Time.tv_usec = CFloor((WaitTime - (double)Time.tv_sec) * 1000.0 * 1000.0);
+		FD_ZERO(&SocketSet);
+		FD_SET( ((SOCKET)SocketDescriptor), &SocketSet);
+
+		int BSDCompat = (int)SocketDescriptor + 1;
+		if      ( CheckFor == SOCKET_Readable ) Status = select(BSDCompat, &SocketSet, nullptr, nullptr, &Time);
+		else if ( CheckFor == SOCKET_Writable ) Status = select(BSDCompat, nullptr, &SocketSet, nullptr, &Time);
+		else if ( CheckFor == SOCKET_HasError ) Status = select(BSDCompat, nullptr, nullptr, &SocketSet, &Time);
+		LastError = Status;
+
+		if ( Status == Error )
+			return SOCKET_HasError;
+		else if ( Status == 0 )
+		{
+			if ( WaitTime > 0 ) //Do not spin
+				Sleep(1);
+			WaitTime -= FPlatformTime::Seconds() - StartTime;
+			if ( WaitTime <= 0 ) //Timed out
+				return SOCKET_Timeout;
+		}
+	}
+	return CheckFor;
+}
+
+/*ESocketState SocketGeneric::CheckState( ESocketState CheckFor, double WaitTime)
 {
 	fd_set SocketSet;
 	timeval Time;
@@ -303,14 +338,13 @@ ESocketState SocketGeneric::CheckState( ESocketState CheckFor, double WaitTime)
 	else if ( Status == 0 )
 		return SOCKET_Timeout;
 	return CheckFor;
-}
+}*/
 
 /*----------------------------------------------------------------------------
 	Windows socket.
 ----------------------------------------------------------------------------*/
 #ifdef __WINSOCK__
 
-const int32 SocketWindows::ENonBlocking = WSAEWOULDBLOCK;
 const int32 SocketWindows::EPortUnreach = WSAECONNRESET;
 const char* SocketWindows::API = "WinSock";
 
@@ -451,6 +485,10 @@ inline int32 SocketWindows::ErrorCode()
 	return WSAGetLastError();
 }
 
+inline bool SocketWindows::IsNonBlocking( int32 Code)
+{
+	return (Code == WSAEWOULDBLOCK) || (Code == WSAEINPROGRESS);
+}
 
 ESocketState SocketWindows::CheckState( ESocketState CheckFor, double WaitTime)
 {
@@ -492,7 +530,6 @@ ESocketState SocketWindows::CheckState( ESocketState CheckFor, double WaitTime)
 ----------------------------------------------------------------------------*/
 #ifdef __BSD_SOCKETS__
 
-const int32 SocketBSD::ENonBlocking = EAGAIN;
 const int32 SocketBSD::EPortUnreach = ECONNREFUSED;
 const char* SocketBSD::API = ("Sockets");
 
@@ -604,6 +641,11 @@ const char* SocketBSD::ErrorText( int32 Code)
 int32 SocketBSD::ErrorCode()
 {
 	return errno;
+}
+
+bool SocketBSD::IsNonBlocking( int32 Code)
+{
+	return (Code == EAGAIN) || (Code == EINPROGRESS) || (Code == EALREADY);
 }
 
 #endif

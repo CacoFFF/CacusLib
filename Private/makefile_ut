@@ -3,7 +3,7 @@ CXX = g++
 SONAME = Cacus.so
 
 OTHERSTUFF = -Wl
-CXXFLAGS = -std=gnu++17 -msse2 -m32 -fpermissive -fno-strict-aliasing -O2 -Wall -fvisibility=hidden -I. -I../Cacus
+CXXFLAGS = -std=gnu++17 -msse2 -m32 -fpermissive -fno-strict-aliasing -O2 -Wall -fvisibility=hidden -DCACUSLIB_DISABLE_FIELD=1 -DCACUSLIB_DISABLE_OUTPUTDEVICE=1 -I. -I../Cacus
 LDFLAGS = -shared -m32 -rdynamic -lc -ldl -pthread -lpthread -Wl,-z,defs -Wl,-soname,$(SONAME)
 OUTPUT = $(SONAME)
 LIBS = 

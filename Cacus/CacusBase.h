@@ -44,7 +44,10 @@ namespace Cacus
 	}
 	template< typename C , typename S > inline const C* TGetCharStream( const S& String)
 	{
+	#if _WINDOWS
+		// Note: GCC will trigger this even when the template isn't specialized!!
 		static_assert( false, "TGetCharStream not defined for custom string type." );
+	#endif
 		return nullptr;
 	}
 };

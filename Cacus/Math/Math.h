@@ -23,10 +23,13 @@
 		#warning "GCC needs to be at least 7.x for decent vectorization, expect unoptimized code."
 	#endif
 	#include "emmintrin.h"
+	typedef __m128  CF_reg128;
+	typedef __m128i CI_reg128;
 #else
 	#define CACUS_NO_INTRINSICS
-	class __m128;
-	class __m128i;
+	#error "NO SEE CODE!!"
+	class CF_reg128 {};
+	class CI_reg128 {};
 #endif
 
 /*----------------------------------------------------------------------------

@@ -1,5 +1,6 @@
-# Prerequisites
+# GCC intermediate files
 *.d
+*.lst
 
 # Compiled Object files
 *.slo
