@@ -178,4 +178,52 @@ public:
 	}
 };
 
+class CAtomicLock
+{
+protected:
+	volatile int32 Lock;
+
+public:
+
+	CAtomicLock() : Lock(0) {}
+	~CAtomicLock() { Lock=0; }
+
+	void Acquire()
+	{
+		int32 SpinCount = 5000;
+		do
+		{
+			// Spin at first, sleep later
+			while ( Lock )
+			{
+				if ( SpinCount > 0 )
+					SpinCount--;
+				else
+					Sleep(0);
+			}
+		} while ( FPlatformAtomics::InterlockedCompareExchange( &Lock, 1, 0) );
+	}
+
+	void Release()
+	{
+		FPlatformAtomics::InterlockedExchange( &Lock, 0);
+	}
+
+	bool IsActive() const
+	{
+		return Lock != 0;
+	}
+
+	//
+	// Scoped utility
+	//
+	class CScope
+	{
+		CAtomicLock& Lock;
+	public:
+		CScope( CAtomicLock& InLock) : Lock(InLock) { Lock.Acquire(); }
+		~CScope() { Lock.Release(); }
+	};
+};
+
 #endif

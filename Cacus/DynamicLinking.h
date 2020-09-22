@@ -27,6 +27,7 @@ struct CWindowsScopedLibrary
 
 	CWindowsScopedLibrary()                            : Handle(nullptr) {}
 	CWindowsScopedLibrary( const char* LibraryName)    : Handle(LoadLibraryA(LibraryName)) {}
+	CWindowsScopedLibrary( CWindowsScopedLibrary&& Rhs){ Handle=Rhs.Handle; Rhs.Handle=nullptr; }
 	~CWindowsScopedLibrary()                           { if ( Handle ) FreeLibrary( Handle); }
 
 	operator bool() const                              { return Handle != nullptr; }
@@ -38,17 +39,20 @@ typedef CWindowsScopedLibrary CScopedLibrary;
 
 #elif _UNIX
 
+#include <dlfcn.h>
 struct CUnixScopedLibrary
 {
 	void* Handle;
 
 	CUnixScopedLibrary()                               : Handle(nullptr) {}
-	CUnixScopedLibrary( const char* LibraryName)       : Handle(LOAD_LIBRARY_HERE) {}
-	~CUnixScopedLibrary()                              { if ( Handle ) FREE_LIBRARY_HERE; }
+	CUnixScopedLibrary( const char* LibraryName)       : Handle(dlopen(LibraryName, RTLD_NOW|RTLD_LOCAL)) {}
+	CUnixScopedLibrary( CUnixScopedLibrary&& Rhs)      { Handle=Rhs.Handle; Rhs.Handle=nullptr; }
+	~CUnixScopedLibrary()                              { if ( Handle ) dlclose(Handle); }
 
 	operator bool() const                              { return Handle != nullptr; }
-	template<class T> T Get( const char* Sym) const    { return GET_SYMBOL_HERE; }
+	template<class T> T Get( const char* Sym) const    { return (T)dlsym( Handle, Sym); }
 };
+typedef CUnixScopedLibrary CScopedLibrary;
 
 #endif
 
