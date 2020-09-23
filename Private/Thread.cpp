@@ -29,7 +29,6 @@
 #include "CacusBase.h"
 
 #include "AppTime.h"
-#include "Atomics.h"
 #include "CacusThread.h"
 #include "CacusGlobals.h"
 #include "StackUnwinder.h"
@@ -41,6 +40,7 @@ ENTRY_TYPE CThread::CThreadEntryContainer( void* Arg)
 {
 	CScopeCounter SC( &COpenThreads);
 	CThread* volatile Thread = (CThread*)Arg;
+	CThread* ThreadRef = Thread;
 
 //	printf( "Run thread %i\n", Thread->tId);
 	ENTRY_POINT EntryPoint     = Thread->EntryPoint;
@@ -48,7 +48,7 @@ ENTRY_TYPE CThread::CThreadEntryContainer( void* Arg)
 	uint32      RepeatInterval = Thread->RepeatInterval;
 	uint32      Flags          = Thread->Flags;
 	uint32      tId            = Thread->ThreadId();
-	Thread->ThreadHandlerPtr = &Thread;
+	Thread->ThreadHandlerPtr   = &Thread;
 	if ( Flags & THF_Detached ) //Detached
 		Thread->Detach();
 
@@ -59,7 +59,7 @@ ENTRY_TYPE CThread::CThreadEntryContainer( void* Arg)
 		{
 			while ( EntryPoint )
 			{
-				Result = (EntryPoint)(EntryArg,Thread);
+				Result = (EntryPoint)(EntryArg,ThreadRef);
 
 				if ( Result == THREAD_END_LOOP )
 					{}
@@ -108,7 +108,7 @@ CThread::CThread( const ENTRY_POINT InEntryPoint, void* InEntryArg, uint32 InFla
 CThread::~CThread()
 {
 	WaitFinish();
-	CSleepLock SL(&DestructLock);
+	DestructLock.Acquire();
 //	printf("Thread destruct finish\n");
 }
 //---------- CThread::~CThread end ----------//
@@ -119,7 +119,7 @@ int CThread::Run()
 {
 	if ( tId )
 		return 0;
-	CSpinLock SL(&Lock);
+	CAtomicLock::CScope SL(Lock);
 #if _WINDOWS
 	void* Handle = CreateThread( nullptr, 0, CThread::CThreadEntryContainer, this, 0, (uint32*)&tId );
 	if ( !Handle )
@@ -132,8 +132,10 @@ int CThread::Run()
 	pthread_attr_setdetachstate( &ThreadAttributes, PTHREAD_CREATE_DETACHED );
 	if ( pthread_create( &Handle, &ThreadAttributes, CThread::CThreadEntryContainer, this ) )
 		return tId = 0;
+	tId = *(int32*)&Handle;
 #endif
-	FPlatformAtomics::InterlockedIncrement( &DestructLock);
+	DestructLock.Release();
+	DestructLock.Acquire();
 	return 1;
 }
 //---------- CThread::Run end ----------//
@@ -156,7 +158,7 @@ int CThread::Run( ENTRY_POINT ThreadEntry, void* Arg)
 
 void CThread::Detach()
 {
-	CSpinLock SL(&Lock);
+	CAtomicLock::CScope SL(Lock);
 	if ( tId )
 	{
 //		printf( "Detach thread %i\n", tId);
@@ -164,10 +166,10 @@ void CThread::Detach()
 		{
 			*ThreadHandlerPtr = nullptr;
 			ThreadHandlerPtr = nullptr;
-			FPlatformAtomics::InterlockedDecrement( &DestructLock);
 		}
 		tId = 0;
 	}
+	DestructLock.Release();
 }
 
 int CThread::WaitFinish( float MaxWait)

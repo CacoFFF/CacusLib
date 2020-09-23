@@ -7,6 +7,7 @@
 #define INC_CTHREAD
 
 #include "CacusPlatform.h"
+#include "Atomics.h"
 
 //Types are all 32 bits
 
@@ -43,8 +44,8 @@ struct CACUS_API CThread
 {
 	typedef uint32 (*ENTRY_POINT)(void*,CThread*);
 private:
-	volatile int32 Lock;
-	volatile int32 DestructLock;
+	CAtomicLock Lock;
+	CAtomicLock DestructLock;
 	volatile uint32 tId;
 	CThread* volatile* volatile ThreadHandlerPtr; // *ThreadHandlerPtr == this
 public:
