@@ -118,7 +118,7 @@ template <typename CHARSRC,typename CHARDEST> FORCEINLINE int templ_strcpy_s( CH
 	for ( i=0 ; i<DestChars ; i++ )
 		if ( (Dest[i] = (CHARDEST)Src[i]) == '\0' )
 			return 0;
-	Dest[0] = '\0';
+	Dest[DestChars-1] = '\0';
 	return ERANGE;
 }
 int CStrcpy8_s ( char*   Dest, size_t DestChars, const char*   Src) { return templ_strcpy_s( Dest, DestChars, Src); }
