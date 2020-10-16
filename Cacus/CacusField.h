@@ -192,6 +192,7 @@ public:
 	CField* Next;
 
 	CField( const char* InName, CStruct* InParent=nullptr);
+	virtual ~CField() {}
 
 	bool IsType( const char* Type) const;
 
@@ -204,7 +205,6 @@ public:
 	{
 		return IsType(Type);
 	}
-
 };
 
 
