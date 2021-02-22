@@ -35,7 +35,7 @@ inline CFVector4::CFVector4( EZero)
 {
 	_mm_storeu_ps( &X, _mm_setzero_ps());
 }
-inline CFVector4::CFVector4( __m128 reg)
+inline CFVector4::CFVector4( CF_reg128 reg)
 {
 	_mm_storeu_ps( &X, reg); 
 }
@@ -43,24 +43,24 @@ inline CFVector4::CFVector4( __m128 reg)
 
 inline CFVector4& CFVector4::operator=( const CFVector4& Other)
 {
-	_mm_storeu_ps( &X, Other); //Auto-load
+	_mm_storeu_ps( &X, Other.reg_f()); //Auto-load
 	return *this;
 }
 
 inline CFVector4 CFVector4::operator+( const CFVector4& Other) const
-{	return _mm_add_ps( *this, Other);	}
+{	return _mm_add_ps( reg_f(), Other.reg_f());	}
 inline CFVector4 CFVector4::operator-( const CFVector4& Other) const
-{	return _mm_sub_ps( *this, Other);	}
+{	return _mm_sub_ps( reg_f(), Other.reg_f());	}
 inline CFVector4 CFVector4::operator*( const CFVector4& Other) const
-{	return _mm_mul_ps( *this, Other);	}
+{	return _mm_mul_ps( reg_f(), Other.reg_f());	}
 inline CFVector4 CFVector4::operator/( const CFVector4& Other) const
-{	return _mm_div_ps( *this, Other);	}
+{	return _mm_div_ps( reg_f(), Other.reg_f());	}
 
 inline float CFVector4::operator|( const CFVector4& Other) const
-{	return _Dot(Other)._X();	}
+{	return GetX(_Dot(Other));	}
 
-inline CFVector4 CFVector4::operator&( const CFVector4 & Other) const
-{	return _mm_and_ps( *this, Other);	}
+inline CFVector4 CFVector4::operator&( const CFVector4& Other) const
+{	return _mm_and_ps( reg_f(), Other.reg_f());	}
 
 inline CFVector4 CFVector4::operator*(float F) const
 {	return *this * CFVector4(F);	}
@@ -78,34 +78,34 @@ inline CFVector4 CFVector4::operator/=( const CFVector4& Other)
 
 inline CFVector4 CFVector4::operator-() const
 {
-	return CFVector4( _mm_xor_ps( *this, MASK_SIGNBITS));
+	return CFVector4( _mm_xor_ps( this->reg_f(), MASK_SIGNBITS));
 }
 
-inline bool CFVector4::operator==(const CFVector4 & Other) const
-{	return _mm_movemask_ps( _mm_cmpeq_ps( *this, Other) ) == 0b1111;	}
-inline bool CFVector4::operator<( const CFVector4 & Other) const
-{	return _mm_movemask_ps( _mm_cmplt_ps( *this, Other) ) == 0b1111;	}
-inline bool CFVector4::operator>( const CFVector4 & Other) const
-{	return _mm_movemask_ps( _mm_cmpgt_ps( *this, Other) ) == 0b1111;	}
-inline bool CFVector4::operator<=( const CFVector4 & Other) const
-{	return _mm_movemask_ps( _mm_cmple_ps( *this, Other) ) == 0b1111;	}
-inline bool CFVector4::operator>=( const CFVector4 & Other) const
-{	return _mm_movemask_ps( _mm_cmpge_ps( *this, Other) ) == 0b1111;	}
+inline bool CFVector4::operator==(const CFVector4& Other) const
+{	return _mm_movemask_ps( _mm_cmpeq_ps( reg_f(), Other.reg_f()) ) == 0b1111;	}
+inline bool CFVector4::operator<( const CFVector4& Other) const
+{	return _mm_movemask_ps( _mm_cmplt_ps( reg_f(), Other.reg_f()) ) == 0b1111;	}
+inline bool CFVector4::operator>( const CFVector4& Other) const
+{	return _mm_movemask_ps( _mm_cmpgt_ps( reg_f(), Other.reg_f()) ) == 0b1111;	}
+inline bool CFVector4::operator<=( const CFVector4& Other) const
+{	return _mm_movemask_ps( _mm_cmple_ps( reg_f(), Other.reg_f()) ) == 0b1111;	}
+inline bool CFVector4::operator>=( const CFVector4& Other) const
+{	return _mm_movemask_ps( _mm_cmpge_ps( reg_f(), Other.reg_f()) ) == 0b1111;	}
 
 
-inline CFVector4::operator __m128() const
+inline CF_reg128 CFVector4::reg_f() const
 {
 	return _mm_loadu_ps( &X);
 }
 
-inline CFVector4::operator __m128i() const
+inline CI_reg128 CFVector4::reg_i() const
 {
 	return _mm_castps_si128( _mm_loadu_ps( &X));
 }
 
 inline CFVector4 CFVector4::Abs() const
 {
-	return CFVector4( _mm_and_ps( MASK_ABSOLUTE, *this));
+	return CFVector4( _mm_and_ps( MASK_ABSOLUTE, reg_f() ));
 }
 
 inline CFVector4 CFVector4::Reciprocal() const
@@ -115,48 +115,48 @@ inline CFVector4 CFVector4::Reciprocal() const
 
 inline CFVector4 CFVector4::Reciprocal_Fast() const
 {
-	return _mm_rcp_ps( *this); //z = 1/x estimate
+	return _mm_rcp_ps( reg_f() ); //z = 1/x estimate
 }
 
 inline CFVector4 CFVector4::Reciprocal_Approx() const
 {
-	__m128 z = _mm_rcp_ps( *this); //z = 1/x estimate
-	__m128 Rcp = _mm_sub_ps( _mm_add_ps( z, z), _mm_mul_ps( *this, _mm_mul_ps( z, z))); //2z-xzz
+	__m128 z = _mm_rcp_ps( reg_f() ); //z = 1/x estimate
+	__m128 Rcp = _mm_sub_ps( _mm_add_ps( z, z), _mm_mul_ps( reg_f() , _mm_mul_ps( z, z))); //2z-xzz
 	return CFVector4(Rcp); //~= 1/x to 0.000012%
 }
 
 inline CFVector4 CFVector4::Normal_Approx() const
 {
-	return *this * _mm_rsqrt_ss( _Dot(*this));
+	return *this * _mm_rsqrt_ss( _Dot( *this ));
 }
 
 inline CIVector4 CFVector4::Int() const
 {
-	return _mm_cvttps_epi32( *this );
+	return _mm_cvttps_epi32( reg_f() );
 }
 
 inline int CFVector4::MSB_Mask() const
 {
-	return _mm_movemask_ps( *this);
+	return _mm_movemask_ps( reg_f() );
 }
 
 inline float CFVector4::Magnitude() const
 {
-	return CFVector4( _mm_sqrt_ss( _Dot(*this)))._X();
+	return GetX( _mm_sqrt_ss( _Dot(*this) ));
 }
 
 inline float CFVector4::SquareMagnitude() const
 {
-	return _Dot(*this)._X();
+	return GetX(_Dot(*this));
 }
 
 
 //*****************************
 //Global methods
 inline CFVector4 Min( const CFVector4& A, const CFVector4& B)
-{	return _mm_min_ps( A, B);	}
+{	return _mm_min_ps( A.reg_f(), B.reg_f());	}
 inline CFVector4 Max( const CFVector4& A, const CFVector4& B)
-{	return _mm_max_ps( A, B);	}
+{	return _mm_max_ps( A.reg_f(), B.reg_f());	}
 inline CFVector4 Clamp(const CFVector4& V, const CFVector4& Min, const CFVector4& Max)
 {	return ::Min( ::Max( V, Min), Max);	}
 
@@ -164,27 +164,18 @@ inline CFVector4 Clamp(const CFVector4& V, const CFVector4& Min, const CFVector4
 
 //*****************************
 //Internals
-inline float CFVector4::_X() const
+inline CF_reg128 CFVector4::_CoordsSum() const
 {
-	float F;
-	_mm_store_ss( &F, _mm_load_ps(&X));
-	return F;
-}
-
-inline CFVector4 CFVector4::_CoordsSum() const
-{
-	CFVector4 Result;
-	__m128 v = *this;
+	__m128 v = reg_f();
 	__m128 w = _mm_shuffle_ps( v, v, 0b10110001); //x,y,z,w >> y,x,w,z
 //	__m128 w = _mm_pshufd_ps( v, 0b10110001); //SSE2!
 	v = _mm_add_ps( v, w); // x+y,-,z+w,-
 	w = _mm_movehl_ps( w, v); // >> z+w,-,-,-
 	w = _mm_add_ss( w, v); // x+y+z+w
-	Result = w;
-	return Result;
+	return w;
 }
 
-inline CFVector4 CFVector4::_Dot( const CFVector4& Other) const
+inline CF_reg128 CFVector4::_Dot( const CFVector4& Other) const
 {
 	return (*this * Other)._CoordsSum();
 }

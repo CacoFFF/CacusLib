@@ -49,6 +49,8 @@ int32 CFloor( double Value);
 
 #define _mm_pshufd_ps(v,i) _mm_castsi128_ps( _mm_shuffle_epi32( _mm_castps_si128(v), i))
 
+inline float GetX( CF_reg128 V) { float X; _mm_store_ss( &X, V); return X; }
+
 enum E3D         { E_3D = 0 };
 enum EZero       { E_Zero = 0};
 enum EX          { E_X = 0};
@@ -71,7 +73,7 @@ struct CFVector4
 	CFVector4( const float* data, E3D);
 	CFVector4( const float* data, EXYXY);
 	CFVector4( EZero);
-	CFVector4( __m128 reg);
+	CFVector4( CF_reg128 reg);
 	
 	CFVector4& operator=( const CFVector4& Other);
 	CFVector4 operator+( const CFVector4& Other) const;
@@ -96,8 +98,8 @@ struct CFVector4
 	bool operator<=( const CFVector4& Other) const;
 	bool operator>=( const CFVector4& Other) const;
 
-	operator __m128() const;
-	operator __m128i() const;
+	CF_reg128 reg_f() const;
+	CI_reg128 reg_i() const;
 
 	float Magnitude() const;
 	float SquareMagnitude() const;
@@ -117,9 +119,8 @@ struct CFVector4
 	friend CFVector4 Clamp( const CFVector4& V, const CFVector4& Min, const CFVector4& Max);
 
 	//Internals
-	float _X() const;
-	CFVector4 _CoordsSum() const;
-	CFVector4 _Dot( const CFVector4& Other) const;
+	CF_reg128 _CoordsSum() const;
+	CF_reg128 _Dot( const CFVector4& Other) const;
 
 	//Constants
 	static CIVector4 MASK_ABSOLUTE;

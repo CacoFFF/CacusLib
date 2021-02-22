@@ -17,6 +17,8 @@ __declspec(dllimport) void* __stdcall GetProcAddress( void* hModule, const char*
 }
 # endif
 
+#define CACUSLIB_LIBRARY_EXTENSION ".dll"
+
 struct CWindowsScopedLibrary
 {
 # ifndef _INC_WINDOWS
@@ -38,6 +40,8 @@ struct CWindowsScopedLibrary
 typedef CWindowsScopedLibrary CScopedLibrary;
 
 #elif _UNIX
+
+#define CACUSLIB_LIBRARY_EXTENSION ".so"
 
 #include <dlfcn.h>
 struct CUnixScopedLibrary
