@@ -81,8 +81,8 @@ static_assert( sizeof(int64)  == 8, "Bad int64 size");
 // InPlace new operator support
 #ifndef CACUSLIB_ENUM_INPLACE
 	enum EInPlace { E_InPlace = 0 };
-	inline void* operator new( size_t Size, void* Mem, EInPlace) { return Mem; }
-	inline void operator delete( void* Ptr, void* Mem, EInPlace) {  }
+	inline void* operator new( size_t /*Size*/, void* Mem, EInPlace) { return Mem; }
+	inline void operator delete( void* /*Ptr*/, void* /*Mem*/, EInPlace) {  }
 #define CACUSLIB_ENUM_INPLACE 1
 #endif
 

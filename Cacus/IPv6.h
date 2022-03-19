@@ -155,11 +155,19 @@ public:
 	uint16 Port;
 
 public:
+	static const IPEndpoint SSDPMulticast_v4;
+
+public:
 	IPEndpoint()
 		: Port(0)
 	{}
 
 	IPEndpoint( const IPAddress& InAddress, uint16 InPort )
+		: Address(InAddress)
+		, Port(InPort)
+	{}
+
+	IPEndpoint( IPAddress&& InAddress, uint16 InPort)
 		: Address(InAddress)
 		, Port(InPort)
 	{}

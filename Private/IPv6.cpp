@@ -23,6 +23,8 @@ const IPAddress IPAddress::InternalLoopback_v4(127,0,0,1);
 const IPAddress IPAddress::LanBroadcast(0xFF02,0,0,0,0,0,0,1);
 const IPAddress IPAddress::LanBroadcast_v4(224,0,0,1);
 
+const IPEndpoint IPEndpoint::SSDPMulticast_v4( IPAddress(239,255,255,250), 1900);
+
 /** RFC 4291 notes:
 
 	2.5.5.2. IPv4-Mapped IPv6 Address 
