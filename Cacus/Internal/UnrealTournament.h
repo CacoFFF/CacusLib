@@ -12,6 +12,7 @@
 
 #define USES_INTERNAL_UT
 #define CACUSLIB_ENUM_NOINIT 1
+#define WINDOWS_XP_SUPPORT 1
 
 namespace Cacus
 {

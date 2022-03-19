@@ -30,6 +30,78 @@ template <typename T> EAlignOptions GetAlignmentType()
 	return (EAlignOptions)sizeof(T);
 }
 
+
+//*****************************************************//
+// Extensible stack
+//
+// On-demand data block allocation system for fast single
+// threaded processing.
+// 
+// Based on Unreal Engine's FMemStack
+//
+
+class CMemExStack
+{
+	struct MemBlock
+	{
+		MemBlock* Next;
+		size_t    Size;
+		uint8     Data[1];
+	};
+
+	size_t DefaultSize;
+	MemBlock* TopBlock;
+	MemBlock* UnusedBlock;
+	uint8* Top; // Top <= End
+	uint8* End;
+
+public:
+	CMemExStack( size_t InDefaultSize);
+	~CMemExStack();
+	uint8* PushBytes( size_t InSize, size_t InAlign);
+
+	friend void* operator new( size_t Size, CMemExStack& Mem, size_t Count, size_t Align);
+private:
+	void CACUS_API PushBlock( size_t InSize);
+};
+
+
+inline CMemExStack::CMemExStack( size_t InDefaultSize)
+	: DefaultSize(InDefaultSize)
+	, TopBlock(nullptr)
+	, UnusedBlock(nullptr)
+	, Top(nullptr)
+	, End(nullptr)
+{
+	PushBlock(InDefaultSize);
+}
+
+inline CMemExStack::~CMemExStack()
+{
+	LinkedListFree(TopBlock);
+	LinkedListFree(UnusedBlock);
+}
+
+inline uint8* CMemExStack::PushBytes( size_t InSize, size_t InAlign=EALIGN_PLATFORM_PTR)
+{
+	uint8* Result = AddressAlign(Top, InAlign);
+	Top = Result + InSize;
+	if ( Top > End )
+	{
+		PushBlock( Max(InSize,DefaultSize) );
+		Result = AddressAlign(Top, InAlign);
+		Top = Result + InSize;
+	}
+	return Result;
+}
+
+inline void* operator new( size_t Size, CMemExStack& Mem, size_t Count, size_t Align )
+{
+	return Mem.PushBytes( Size*Count, Align );
+}
+
+
+
 //*****************************************************//
 // Circular Buffer
 //

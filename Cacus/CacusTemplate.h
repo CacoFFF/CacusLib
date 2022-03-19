@@ -128,6 +128,17 @@ template< class T > inline void LinkedListDelete( T*& List)
 	}
 }
 
+template< class T > inline void LinkedListFree( T*& List)
+{
+	while ( List )
+	{
+		T* Next = List->Next;
+		List->Next = nullptr;
+		CFree((void*)List);
+		List = Next;
+	}
+}
+
 //=========================================================
 // One-line deleter
 struct TDeleteOp

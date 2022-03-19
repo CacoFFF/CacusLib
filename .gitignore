@@ -17,6 +17,10 @@
 *.dylib
 *.dll
 
+# CMake files
+out/
+build/
+
 # Visual Studio files
 .vs/
 Debug/
