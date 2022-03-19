@@ -57,6 +57,13 @@ bool CChrIsUpper( uint32 ch)
 	return (ch >= 0xC0 /*À*/ && ch <= 0XDE /*Þ*/ && ch != 0xD7 /*×*/ );
 }
 
+bool CChrIsLower( uint32 ch)
+{
+	if ( ch < 128 )
+		return (CharFlags[ch] & CHTYPE_Lower) != 0;
+	return (ch >= 0xE0 /*à*/ && ch <= 0XFE /*þ*/ && ch != 0xF7 /*÷*/ );
+}
+
 
 /* ==============================================
 	STRING BUFFER HANDLING (REDUCE TEMPLATE CODE IN IMPLEMENTATIONS)

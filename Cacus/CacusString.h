@@ -76,6 +76,7 @@ extern "C"
 	CACUS_API uint32 CGetCharType( uint32 ch);
 	CACUS_API bool CChrIsDigit( uint32 ch);
 	CACUS_API bool CChrIsUpper( uint32 ch);
+	CACUS_API bool CChrIsLower( uint32 ch);
 
 	CACUS_API int CStrcpy8_s ( char*   Dest, size_t DestChars, const char*   Src);
 	CACUS_API int CStrcpy16_s( char16* Dest, size_t DestChars, const char16* Src);
@@ -197,9 +198,13 @@ template < typename CHAR, size_t cmpsize > FORCEINLINE int CStrnicmp( const CHAR
 
 template<typename C> FORCEINLINE C CChrToUpper( C Chr)
 {
-	return CChrIsUpper(Chr) ? Chr : (Chr - ('a' - 'A'));
+	return CChrIsLower(Chr) ? Chr : (Chr - ('a' - 'A'));
 }
 
+template<typename C> FORCEINLINE C CChrToLower( C Chr)
+{
+	return CChrIsUpper(Chr) ? Chr : (Chr + ('a' - 'A'));
+}
 
 
 //Cleans up a string buffer, useful for safety purposes
@@ -211,13 +216,13 @@ template<typename C> FORCEINLINE void CStrZero( C* Str)
 //Turn an existing buffer into lower case
 template<typename C> FORCEINLINE void TransformLowerCase( C* Str)
 {
-	for ( ; *Str ; Str++ )	if ( CGetCharType(*Str) & CHTYPE_Upper )	*Str += ('a' - 'A');
+	for ( ; *Str ; Str++ )	if ( CChrIsUpper(*Str) )	*Str += ('a' - 'A');
 }
 
 //Turn an existing buffer into upper case
 template<typename C> FORCEINLINE void TransformUpperCase( C* Str)
 {
-	for ( ; *Str ; Str++ )	if ( CGetCharType(*Str) & CHTYPE_Lower )	*Str -= ('a' - 'A');
+	for ( ; *Str ; Str++ )	if ( CChrIsLower(*Str) )	*Str -= ('a' - 'A');
 }
 
 
