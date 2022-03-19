@@ -1,4 +1,6 @@
-#include "CacusBase.h"
+
+#include "CacusLibPrivate.h"
+
 #include "CacusField.h"
 
 #if USES_CACUS_FIELD

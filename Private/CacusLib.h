@@ -32,13 +32,19 @@ _CRT_SECURE_NO_WARNINGS
 //***************************************
 //          API
 #if _WINDOWS
-	#define CACUS_API __declspec(dllexport)
-#else
+	#if CACUS_BUILDING_LIBRARY
+		#define CACUS_API __declspec(dllexport)
+	#else
+		#define	CACUS_API __declspec(dllimport)
+	#endif
+#elif _UNIX
 	#if __GNUC__ >= 4
 		#define CACUS_API __attribute__ ((visibility ("default")))
 	#else
 		#define CACUS_API
 	#endif
+#else
+	#error "Unrecognized platform"
 #endif
 
 

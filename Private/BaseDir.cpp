@@ -5,7 +5,8 @@
 	Cross-platform cached base directory.
 =============================================================================*/
 
-#include "CacusBase.h"
+#include "CacusLibPrivate.h"
+
 #include "TCharBuffer.h"
 #include "CacusGlobals.h"
 

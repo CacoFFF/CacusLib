@@ -1,5 +1,6 @@
 
-#include "CacusBase.h"
+#include "CacusLibPrivate.h"
+
 #include "CacusOutputDevice.h"
 
 #if USES_CACUS_OUTPUT

@@ -1,4 +1,5 @@
-#include "CacusBase.h"
+
+#include "CacusLibPrivate.h"
 
 #include "CacusOutputDevice.h"
 #include <wchar.h>

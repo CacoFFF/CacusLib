@@ -6,6 +6,7 @@
 	without having to use SEH.
 =============================================================================*/
 
+#include "CacusLibPrivate.h"
 
 #include "Atomics.h"
 #include "DebugCallback.h"

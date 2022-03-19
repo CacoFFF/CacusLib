@@ -2,6 +2,8 @@
 #include <cstdarg>
 #include <wchar.h>
 
+#include "CacusLibPrivate.h"
+
 #include "CacusString.h"
 #include "CacusMem.h"
 #include "DebugCallback.h"
@@ -52,7 +54,7 @@ bool CChrIsUpper( uint32 ch)
 {
 	if ( ch < 128 )
 		return (CharFlags[ch] & CHTYPE_Upper) != 0;
-	return (ch >= 0xC0 /*ï¿½*/ && ch <= 0XDE /*ï¿½*/ && ch != 0xD7 /*ï¿½*/ );
+	return (ch >= 0xC0 /*À*/ && ch <= 0XDE /*Þ*/ && ch != 0xD7 /*×*/ );
 }
 
 

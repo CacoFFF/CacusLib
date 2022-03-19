@@ -11,6 +11,7 @@
 #endif
 
 #define USES_INTERNAL_UT
+#define CACUSLIB_ENUM_NOINIT 1
 
 namespace Cacus
 {

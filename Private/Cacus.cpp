@@ -1,4 +1,6 @@
 
+#include "CacusLibPrivate.h"
+
 #include "CacusString.h"
 #include "DebugCallback.h"
 #include "CacusTemplate.h"

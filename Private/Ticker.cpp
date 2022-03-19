@@ -11,7 +11,7 @@
 	or more of the necessary sleeping methods to reach the next timer.
 =============================================================================*/
 
-#include "CacusBase.h"
+#include "CacusLibPrivate.h"
 
 #include "AppTime.h"
 #include "Atomics.h"

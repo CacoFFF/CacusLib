@@ -35,7 +35,7 @@
 	#endif
 #endif
 
-#include "CacusBase.h"
+#include "CacusLibPrivate.h"
 
 #include "CacusThread.h"
 #include "CacusString.h"

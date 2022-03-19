@@ -1,5 +1,5 @@
 
-#include "CacusBase.h"
+#include "CacusLibPrivate.h"
 
 #include "CacusTemplate.h"
 #include "TCharBuffer.h"

@@ -5,6 +5,8 @@
 	Various general purpose utils implementations.
 =============================================================================*/
 
+#include "CacusLibPrivate.h"
+
 #include "Utils.h"
 #include "CacusString.h"
 #include "DebugCallback.h"

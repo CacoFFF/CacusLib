@@ -1,4 +1,6 @@
 
+#include "CacusLibPrivate.h"
+
 #include "DebugCallback.h"
 #include "Atomics.h"
 

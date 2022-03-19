@@ -8,6 +8,8 @@
 	stops operations upon finding an error, no exceptions thrown.
 =============================================================================*/
 
+#include "CacusLibPrivate.h"
+
 #include "CacusString.h"
 #include "DebugCallback.h"
 

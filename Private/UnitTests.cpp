@@ -1,5 +1,7 @@
 
-#include "CacusBase.h"
+
+#include "CacusLibPrivate.h"
+
 #include "UnitTests.h"
 
 #ifndef CACUS_USE_TESTS

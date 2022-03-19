@@ -72,6 +72,20 @@ static_assert( sizeof(int64)  == 8, "Bad int64 size");
 	#define CACUSLIB_ENUMS
 #endif
 
+// NoInit constructor support
+#ifndef CACUSLIB_ENUM_NOINIT
+	enum ENoInit { E_NoInit = 0 };
+#define CACUSLIB_ENUM_NOINIT 1
+#endif
+
+// InPlace new operator support
+#ifndef CACUSLIB_ENUM_INPLACE
+	enum EInPlace { E_InPlace = 0 };
+	inline void* operator new( size_t Size, void* Mem, EInPlace) { return Mem; }
+	inline void operator delete( void* Ptr, void* Mem, EInPlace) {  }
+#define CACUSLIB_ENUM_INPLACE 1
+#endif
+
 //C++17 filesystem
 #define FILESYSTEM experimental::filesystem::v1
 
