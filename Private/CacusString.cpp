@@ -45,8 +45,15 @@ static const uint16 CharFlags[128] =
 */
 
 uint32 CGetCharType(uint32 ch)      { return (ch < 128) ? CharFlags[ch] : 0; }
-bool CIsDigit(uint32 ch)           { return (CGetCharType(ch) & CHTYPE_Digit) != 0;}
+bool CChrIsDigit(uint32 ch)           { return (CGetCharType(ch) & CHTYPE_Digit) != 0;}
 
+
+bool CChrIsUpper( uint32 ch)
+{
+	if ( ch < 128 )
+		return (CharFlags[ch] & CHTYPE_Upper) != 0;
+	return (ch >= 0xC0 /*�*/ && ch <= 0XDE /*�*/ && ch != 0xD7 /*�*/ );
+}
 
 
 /* ==============================================
@@ -244,6 +251,7 @@ int CStrcmp8 ( const char*   S1, const char*   S2) { return templ_strcmp(S1,S2);
 int CStrcmp16( const char16* S1, const char16* S2) { return templ_strcmp(S1,S2); }
 int CStrcmp32( const char32* S1, const char32* S2) { return templ_strcmp(S1,S2); }
 
+
 /* ==============================================
 	STRING COMPARE N
 */
@@ -265,6 +273,45 @@ template<typename CHAR> inline int templ_strncmp( const CHAR* S1, const CHAR* S2
 int CStrncmp8 ( const char*   S1, const char*   S2, size_t len) { return templ_strncmp(S1,S2,len); }
 int CStrncmp16( const char16* S1, const char16* S2, size_t len) { return templ_strncmp(S1,S2,len); }
 int CStrncmp32( const char32* S1, const char32* S2, size_t len) { return templ_strncmp(S1,S2,len); }
+
+
+/* ==============================================
+	STRING COMPARE I
+*/
+template<typename CHAR> inline int templ_stricmp( const CHAR* S1, const CHAR* S2)
+{
+	for ( ; CChrToUpper(*S1)==CChrToUpper(*S2) ; S1++, S2++)
+		if ( *S1 == '\0' )
+			return 0;
+	return *S1 - *S2;
+}
+int CStricmp8 ( const char*   S1, const char*   S2) { return templ_stricmp(S1,S2); }
+int CStricmp16( const char16* S1, const char16* S2) { return templ_stricmp(S1,S2); }
+int CStricmp32( const char32* S1, const char32* S2) { return templ_stricmp(S1,S2); }
+
+
+/* ==============================================
+	STRING COMPARE N I
+*/
+template<typename CHAR> inline int templ_strnicmp( const CHAR* S1, const CHAR* S2, size_t len)
+{
+	while ( len-- )
+	{
+		const CHAR c1 = CChrToUpper(*S1);
+		const CHAR c2 = CChrToUpper(*S2);
+		if( c1 != c2 )
+			return (int)c1 - (int)c2;
+		if( c1 == '\0' )
+			break;
+		S1++;
+		S2++;
+	}
+	return 0;
+}
+int CStrnicmp8 ( const char*   S1, const char*   S2, size_t len) { return templ_strnicmp(S1,S2,len); }
+int CStrnicmp16( const char16* S1, const char16* S2, size_t len) { return templ_strnicmp(S1,S2,len); }
+int CStrnicmp32( const char32* S1, const char32* S2, size_t len) { return templ_strnicmp(S1,S2,len); }
+
 
 /* ==============================================
 	STRING PRINTF INTO CIRCULAR BUFFER
@@ -333,7 +380,7 @@ template<typename CHAR> inline bool templ_is_numeric( const CHAR* Str) noexcept
 {
 	const CHAR* Start = Str;
 	for ( ; *Str ; Str++ )
-		if ( !CIsDigit(*Str) )
+		if ( !CChrIsDigit(*Str) )
 			return false;
 	return Start != Str;
 }
@@ -412,18 +459,18 @@ static bool _parse_token_float_number( const char*& Stream)
 	if ( *Cur == '-' || *Cur == '+' )
 		Cur++;
 
-	if ( CIsDigit(*Cur) ) {} //Ok ( "n" , "-n" )
-	else if ( (*Cur == '.') && CIsDigit(*(Cur+1)) ) {} //Ok ( ".n" , "-.n" )
+	if ( CChrIsDigit(*Cur) ) {} //Ok ( "n" , "-n" )
+	else if ( (*Cur == '.') && CChrIsDigit(*(Cur+1)) ) {} //Ok ( ".n" , "-.n" )
 	else	return false; //Incorrect format
 
-	for ( ; CIsDigit(*Cur) ; Cur++ );
+	for ( ; CChrIsDigit(*Cur) ; Cur++ );
 	if ( *Cur == '.' ) //Dot
 	{
-		for ( Cur++ ; CIsDigit(*Cur) ; Cur++ );
+		for ( Cur++ ; CChrIsDigit(*Cur) ; Cur++ );
 	}
 	if ( *Cur == 'e' || *Cur == 'E' ) //Exponent
 	{
-		for ( Cur++ ; CIsDigit(*Cur) ; Cur++ );
+		for ( Cur++ ; CChrIsDigit(*Cur) ; Cur++ );
 	}
 	if ( *Cur == 'f' || *Cur == 'F' ) //Float
 		Cur++;

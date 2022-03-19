@@ -26,6 +26,14 @@
 //*******************************************************************
 // TYPE TEMPLATES
 
+enum ECharSize
+{
+	CHSIZE_8,
+	CHSIZE_16,
+	CHSIZE_32,
+	CHSIZE_WIDE  = (sizeof(wchar_t) == 16 ? CHSIZE_16 : CHSIZE_32),
+};
+
 enum ECharType
 {
 	CHTYPE_Upper   = 0x0001,
@@ -41,12 +49,16 @@ enum ECharType
 	CHTYPE_AlNum   = CHTYPE_Alpha | CHTYPE_Digit,
 };
 
-//Compiler safety enforcer
+//Compiler safety enforcers
 template<typename C> inline constexpr bool CheckCharType()           { return false; } 
 template<> inline constexpr bool CheckCharType<char>()               { return true; }
 template<> inline constexpr bool CheckCharType<char16>()             { return true; }
 template<> inline constexpr bool CheckCharType<char32>()             { return true; }
 template<> inline constexpr bool CheckCharType<wchar_t>()            { return true; }
+
+static_assert( sizeof(char)==1, "Invalid char size");
+static_assert( sizeof(char16)==2, "Invalid char16 size");
+static_assert( sizeof(char32)==4, "Invalid char32 size");
 
 //Constant expression string length (cannot use recursive versions because MSVC isn't fully compliant)
 template< typename CHAR , size_t ArSize > constexpr FORCEINLINE size_t _len( const CHAR (&Str)[ArSize])
@@ -62,7 +74,8 @@ template< typename CHAR , size_t ArSize > constexpr FORCEINLINE size_t _len( con
 extern "C"
 {
 	CACUS_API uint32 CGetCharType( uint32 ch);
-	CACUS_API bool CIsDigit( uint32 ch);
+	CACUS_API bool CChrIsDigit( uint32 ch);
+	CACUS_API bool CChrIsUpper( uint32 ch);
 
 	CACUS_API int CStrcpy8_s ( char*   Dest, size_t DestChars, const char*   Src);
 	CACUS_API int CStrcpy16_s( char16* Dest, size_t DestChars, const char16* Src);
@@ -92,6 +105,14 @@ extern "C"
 	CACUS_API int CStrncmp8 ( const char*   S1, const char*   S2, size_t cmplen);
 	CACUS_API int CStrncmp16( const char16* S1, const char16* S2, size_t cmplen);
 	CACUS_API int CStrncmp32( const char32* S1, const char32* S2, size_t cmplen);
+
+	CACUS_API int CStricmp8 ( const char*   S1, const char*   S2);
+	CACUS_API int CStricmp16( const char16* S1, const char16* S2);
+	CACUS_API int CStricmp32( const char32* S1, const char32* S2);
+
+	CACUS_API int CStrnicmp8 ( const char*   S1, const char*   S2, size_t cmplen);
+	CACUS_API int CStrnicmp16( const char16* S1, const char16* S2, size_t cmplen);
+	CACUS_API int CStrnicmp32( const char32* S1, const char32* S2, size_t cmplen);
 
 	CACUS_API char*    VARARGS CSprintf( const char* fmt, ...); //Print into circular buffer
 	CACUS_API wchar_t* VARARGS CWSprintf( const wchar_t* fmt, ...); //Print into circular buffer
@@ -153,6 +174,32 @@ template < typename CHAR, size_t cmpsize > FORCEINLINE int CStrncmp( const CHAR*
 {
 	return CStrncmp( S1, S2, cmpsize-1);
 }
+template < typename CHAR > FORCEINLINE int CStricmp( const CHAR* S1, const CHAR* S2)
+{
+	if ( sizeof(CHAR) == 1 ) return CStricmp8 ( (const char*)  S1, (const char*)  S2);
+	if ( sizeof(CHAR) == 2 ) return CStricmp16( (const char16*)S1, (const char16*)S2);
+	if ( sizeof(CHAR) == 4 ) return CStricmp32( (const char32*)S1, (const char32*)S2);
+}
+template < typename CHAR > FORCEINLINE int CStrnicmp( const CHAR* S1, const CHAR* S2, size_t cmplen)
+{
+	if ( sizeof(CHAR) == 1 ) return CStrnicmp8 ( (const char*)  S1, (const char*)  S2, cmplen);
+	if ( sizeof(CHAR) == 2 ) return CStrnicmp16( (const char16*)S1, (const char16*)S2, cmplen);
+	if ( sizeof(CHAR) == 4 ) return CStrnicmp32( (const char32*)S1, (const char32*)S2, cmplen);
+}
+template < typename CHAR, size_t cmpsize > FORCEINLINE int CStrnicmp( const CHAR* S1, const CHAR(&S2)[cmpsize])
+{
+	return CStrnicmp( S1, S2, cmpsize-1);
+}
+
+
+//*******************************************************************
+// CHAR INLINES
+
+template<typename C> FORCEINLINE C CChrToUpper( C Chr)
+{
+	return CChrIsUpper(Chr) ? Chr : (Chr - ('a' - 'A'));
+}
+
 
 
 //Cleans up a string buffer, useful for safety purposes
@@ -172,6 +219,8 @@ template<typename C> FORCEINLINE void TransformUpperCase( C* Str)
 {
 	for ( ; *Str ; Str++ )	if ( CGetCharType(*Str) & CHTYPE_Lower )	*Str -= ('a' - 'A');
 }
+
+
 
 
 //*******************************************************************
