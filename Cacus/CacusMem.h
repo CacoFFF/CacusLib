@@ -56,11 +56,11 @@ class CMemExStack
 	uint8* End;
 
 public:
-	CMemExStack( size_t InDefaultSize);
+	CMemExStack( size_t InDefaultSize=4096);
 	~CMemExStack();
 	uint8* PushBytes( size_t InSize, size_t InAlign);
 
-	friend void* operator new( size_t Size, CMemExStack& Mem, size_t Count, size_t Align);
+	friend void* operator new( size_t Size, CMemExStack& Mem, size_t Count=1, size_t Align=EALIGN_PLATFORM_PTR);
 private:
 	void CACUS_API PushBlock( size_t InSize);
 };

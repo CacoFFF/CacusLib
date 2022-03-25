@@ -52,19 +52,22 @@ size_t UTF8_EncodedLen32( const char32* Src) { return templ_utf8_encoded_len( Sr
 //
 static bool utf8_HasConts( const char* Pos, uint32 Conts);
 static uint32 utf8_GetCont( const char*& Pos);
-template<typename CHAR> int templ_utf8_decode( CHAR* Dest, size_t DestSize, const char* Src)
+template<typename CHAR> size_t templ_utf8_decode( CHAR* Dest, size_t DestSize, const char* Src)
 {
 	if ( !DestSize )
 		return 0;
 
 	const char* Pos = Src;
 	CHAR* DestLast = &Dest[DestSize-1];
+	size_t Parsed = 0;
 	while ( *Pos && (Dest < DestLast) )
 	{
 		uint32 C = *Pos++;
 		// 0000 0000 - 0000 007F
 		if ( (C & 0b10000000) == 0 ) //0b0xxxxxxx
-		{}
+		{
+			Parsed += 1;
+		}
 		// 0000 0080 - 0000 07FF
 		else if ( ((C & 0b11100000) == 0b11000000) && utf8_HasConts(Pos,1) ) //0b110xxxxx
 		{
@@ -73,6 +76,7 @@ template<typename CHAR> int templ_utf8_decode( CHAR* Dest, size_t DestSize, cons
 			C = C1 | (C << 6);
 			if ( C < 0x80 )
 				break;
+			Parsed += 2;
 		}
 		// 0000 0800 - 0000 FFFF
 		else if ( ((C & 0b11110000) == 0b11100000) && utf8_HasConts(Pos,2) ) //0b1110xxxx
@@ -83,6 +87,7 @@ template<typename CHAR> int templ_utf8_decode( CHAR* Dest, size_t DestSize, cons
 			C = C2 | (C1 << 6) | (C << 12);
 			if ( (C < 0x800) || (C >= 0xD800 && C <= 0xDFFF) )
 				break;
+			Parsed += 3;
 		}
 		// 0001 0000 - 0010 FFFF
 		else if ( ((C & 0b11111000) == 0b11110000) && utf8_HasConts(Pos,3) ) //0b11110xxx
@@ -94,6 +99,7 @@ template<typename CHAR> int templ_utf8_decode( CHAR* Dest, size_t DestSize, cons
 			C = C3 | (C2 << 6) | (C1 << 12) | (C << 18);
 			if ( (C < 0x10000) || (C > 0x10FFFF) )
 				break;
+			Parsed += 4;
 		}
 		else
 			break;
@@ -113,11 +119,11 @@ template<typename CHAR> int templ_utf8_decode( CHAR* Dest, size_t DestSize, cons
 	}
 
 	*Dest = '\0';
-	return 0;
+	return Parsed;
 }
-int UTF8_Decode8 ( char*   Dest, size_t DestSize, const char* Src) { return templ_utf8_decode( Dest, DestSize, Src); }
-int UTF8_Decode16( char16* Dest, size_t DestSize, const char* Src) { return templ_utf8_decode( Dest, DestSize, Src); }
-int UTF8_Decode32( char32* Dest, size_t DestSize, const char* Src) { return templ_utf8_decode( Dest, DestSize, Src); }
+size_t UTF8_Decode8 ( char*   Dest, size_t DestSize, const char* Src) { return templ_utf8_decode( Dest, DestSize, Src); }
+size_t UTF8_Decode16( char16* Dest, size_t DestSize, const char* Src) { return templ_utf8_decode( Dest, DestSize, Src); }
+size_t UTF8_Decode32( char32* Dest, size_t DestSize, const char* Src) { return templ_utf8_decode( Dest, DestSize, Src); }
 
 static bool utf8_HasConts( const char* Pos, uint32 Conts)
 {

@@ -9,6 +9,11 @@
 		( sizeof(array) / sizeof((array)[0]) )
 #endif
 
+template <typename T, size_t Count> FORCEINLINE constexpr size_t ArrayCount( const T (&Array)[Count])
+{
+	return Count;
+}
+
 /**
 * gcc3 thinks &((myclass*)NULL)->member is an invalid use of the offsetof
 * macro. This is a broken heuristic in the compiler and the workaround is
@@ -63,6 +68,16 @@ template< class T > inline void Exchange( T& A, T& B )
 {
 	Swap(A, B);
 }
+template< typename T> inline T Align( T Value, size_t Align)
+{
+	if ( Align > 1 )
+	{
+		const size_t Mask = Align-1;
+		Value = (T)(((size_t)Value + Mask) & (~Mask));
+	}
+	return Value;
+}
+
 
 template< typename TOUT=void, typename TIN > inline TOUT* AddressOffset( TIN* Address, int_p Offset)
 {
@@ -77,6 +92,14 @@ template< typename T=void > inline T* AddressAlign( T* Addr, const size_t Align)
 		Addr = (T*)(((size_t)Addr + Mask) & (~Mask));
 	}
 	return Addr;
+}
+
+template< class T > inline size_t LinkedListCount( T* List)
+{
+	size_t Count = 0;
+	for ( T* Link=List; Link; Link=List->GetNext() )
+		Count++;
+	return Count;
 }
 
 //=========================================================

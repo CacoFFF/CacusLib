@@ -12,6 +12,10 @@
 
 #include "CacusPlatform.h"
 
+#ifdef _INC_STDLIB
+#include "Internal/CScopeMem.h"
+#endif
+
 //*******************************************************************
 // Features on this CacusLib build
 //

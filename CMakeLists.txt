@@ -126,6 +126,8 @@ add_library(
   "Private/IGD.cpp"
   "Private/CacusMem.cpp"
 
+  "Private/Parser/Line.cpp"
+
    ${CACUS_HEADERS}
 )
 
@@ -151,3 +153,4 @@ add_subdirectory ("Experimental")
 
 message("TARGETS IS ${TARGETS}")
 message("INSTALLATION AT ${CMAKE_INSTALL_PREFIX}")
+# message("HEADERS ARE ${CACUS_HEADERS}")

@@ -5,5 +5,6 @@
 
 int main()
 {
-	GetSSDP();
+//	GetSSDP();
+	SetUpnpPort(7777,true);
 }
