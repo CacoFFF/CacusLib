@@ -19,6 +19,7 @@ https://datatracker.ietf.org/doc/html/rfc6970
 #include "NetworkSocket.h"
 #include "AppTime.h"
 #include "Atomics.h"
+#include "URI.h"
 
 #include "Parser/Line.h"
 
@@ -76,19 +77,28 @@ void GetSSDP()
 //
 struct UpnpRouterSession
 {
+	IPAddress LocalAddress;
+	CParserFastLine8 SSDP_Response;
+	const char* RootDesc_Location;
 
+	bool ResolveLocalAddress();
+	bool GetDeviceRootDesc();
 };
 
 
-const char* DiscoverRootDesc()
+bool UpnpRouterSession::ResolveLocalAddress()
 {
-	const char* Result = nullptr;
+	CSocket::Init();
+	LocalAddress = CSocket::ResolveHostname("", false);
+	return LocalAddress != IPAddress::Any;
+}
 
+
+bool UpnpRouterSession::GetDeviceRootDesc()
+{
 	// Init socket
 	int32 BytesSent = 0;
-	CSocket::Init();
-	IPEndpoint LocalEndpoint( IPAddress(0,0,0,0), 8060 );
-	LocalEndpoint.Address = CSocket::ResolveHostname("", false);
+	IPEndpoint LocalEndpoint( LocalAddress, 8060 );
 
 	// Multicast emit
 	CSocket Socket(false);
@@ -126,35 +136,50 @@ const char* DiscoverRootDesc()
 		{
 			Buf[Read] = 0;
 			// TODO: PARSE UTF-8!!
-			CParserFastLine8 LineParser;
-			if ( LineParser.Parse((const char*)Buf) )
+			if ( SSDP_Response.Parse((const char*)Buf) )
 			{
-				const char* Location = nullptr;
-				for ( const char** LineArray=LineParser.GetLineArray(); *LineArray; LineArray++)
+				for ( const char** LineArray=SSDP_Response.GetLineArray(); *LineArray; LineArray++)
 				{
 					printf("%s\n", *LineArray);
 					if ( !CStrnicmp(*LineArray,"Location: ") )
-						Location = *LineArray + _len("Location: ");
+						RootDesc_Location = *LineArray + _len("Location: ");
 				}
-				if ( Location )
-					Result = CopyToBuffer(Location);
+				if ( RootDesc_Location )
+					break;
 			}
 		}
 	}
 	Socket.Close();
 
-	return Result;
+	return RootDesc_Location != nullptr;
 }
 
 
 
 bool SetUpnpPort( int Port, bool Enable)
 {
-	const char* RootDesc = DiscoverRootDesc();
-	if ( !RootDesc )
+	UpnpRouterSession Session;
+
+	if ( !Session.ResolveLocalAddress() )
+	{
+		DebugCallback("Unable to resolve local network address", CACUS_CALLBACK_TEST);
+		return false;
+	}
+
+	if ( !Session.GetDeviceRootDesc() )
+	{
+		DebugCallback("Unable to find UPnP Root device", CACUS_CALLBACK_TEST);
+		return false;
+	}
+
+	printf("RootDesc found at: %s\n", Session.RootDesc_Location);
+	URI RootDesc_URI(Session.RootDesc_Location);
+	if ( CStricmp(RootDesc_URI.Scheme(),"http") || !RootDesc_URI.Hostname() || !RootDesc_URI.Path() )
+	{
+		const char* Message = CSprintf("Invalid Root device descriptor URI: %s", Session.RootDesc_Location);
+		DebugCallback(Message, CACUS_CALLBACK_TEST);
 		return false;
 
-	printf("RootDesc found at: %s\n", RootDesc);
 
 	return false;
 }

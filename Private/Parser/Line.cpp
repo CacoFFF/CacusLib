@@ -26,7 +26,6 @@ static const char* DefaultLineArray[] =
 
 
 
-//========= templ_strcmp_token - begin ==========//
 //
 // Checks if the Token matches the start of the String
 //
@@ -41,13 +40,9 @@ template<typename CHAR> inline bool templ_strcmp_token( const CHAR* String, cons
 	}
 	return true;
 }
-//========= templ_strcmp_token - end ==========//
 
 
 
-
-//========= CParserFastLine8 constructor - begin ==========//
-//
 CParserFastLine8::CParserFastLine8()
 	: LineCount(0)
 	, LineArray(DefaultLineArray)
@@ -56,13 +51,8 @@ CParserFastLine8::CParserFastLine8()
 	, LineBreakArray(DefaultLineBreaks8)
 {
 }
-//========= CParserFastLine8 constructor - end ==========//
 
 
-//========= CParserFastLine8 destructor - begin ==========//
-// 
-// Ensure memory deallocation.
-//
 CParserFastLine8::~CParserFastLine8()
 {
 	if ( Data )
@@ -71,10 +61,8 @@ CParserFastLine8::~CParserFastLine8()
 		Data = nullptr;
 	}
 }
-//========= CParserFastLine8 destructor - end ==========//
 
 
-//========= CParserFastLine8::SetLineBreaks - begin ==========//
 // 
 // Replaces tokens used to separate lines.
 //
@@ -83,7 +71,6 @@ void CParserFastLine8::SetLineBreaks( const char** NewLineBreakArray, size_t New
 	LineBreakArray = NewLineBreakArray;
 	LineBreakCount = NewLineBreakCount;
 }
-//========= CParserFastLine8::SetLineBreaks - end ==========//
 
 
 //========= CParserFastLine8::Parse - begin ==========//

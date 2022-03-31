@@ -211,7 +211,7 @@ static void RemoveDotSegments( const char*& Path)
 				Output = CharBuffer<char>( CStrlen(Input));
 				Output[0] = '\0';
 			}
-			char* Slash = CStrchr( Input, '/');
+			char* Slash = CStrchr( Input+1, '/');
 			if ( Slash )
 			{
 				*Slash = '\0'; //Temporarily split in two
@@ -224,6 +224,7 @@ static void RemoveDotSegments( const char*& Path)
 		}
 	}
 	CFree( (void*)Path);
+	Path = nullptr;
 	SetText( Path, Output);
 }
 //========= RemoveDotSegments - begin ==========//
@@ -380,7 +381,7 @@ const char* URI::operator*() const //TODO: NOT TESTED
 		if ( Len_Port )
 		{
 			sprintf( Result + Pos, ":%i"        , (int)port);
-			Pos += Len_Port;
+			Pos += Len_Port + 1;
 		}
 		if ( Len_Path )
 		{
