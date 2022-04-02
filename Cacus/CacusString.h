@@ -309,12 +309,17 @@ template<typename CHAR> CHAR* CharBuffer( size_t CharCount)
 // The UTF8 encoder will return <0> in case of success and <char_index> in case of failure
 // This is very useful for encoding a large string in parts over a small buffer
 // The UTF8 decoder will return the length of the decoded string
+// Use the EncodedLen/DecodedLen to get final lengths and verify strings can be fully handled
 
 extern "C"
 {
 	CACUS_API size_t UTF8_EncodedLen8 ( const char*   Src);
 	CACUS_API size_t UTF8_EncodedLen16( const char16* Src);
 	CACUS_API size_t UTF8_EncodedLen32( const char32* Src);
+
+	CACUS_API size_t UTF8_DecodedLen8 ( const char* Src);
+	CACUS_API size_t UTF8_DecodedLen16( const char* Src);
+	CACUS_API size_t UTF8_DecodedLen32( const char* Src);
 
 	CACUS_API size_t UTF8_Decode8 ( char*   Dest, size_t DestSize, const char* Src);
 	CACUS_API size_t UTF8_Decode16( char16* Dest, size_t DestSize, const char* Src);
@@ -328,6 +333,7 @@ extern "C"
 struct utf8
 {
 	// Returns the required buffer size to hold the encoded version of a string
+	// Returns 0 on error
 	template< typename CHAR > static FORCEINLINE size_t EncodedLen( const CHAR* Str)
 	{
 		if      ( sizeof(CHAR) == 1 ) return UTF8_EncodedLen8 ( (const char*)  Str);
@@ -335,6 +341,17 @@ struct utf8
 		else if ( sizeof(CHAR) == 4 ) return UTF8_EncodedLen32( (const char32*)Str);
 	}
 
+	// Returns the required buffer size to hold the decoded version of a string
+	// Returns 0 on error
+	// * Requires explicit specialization
+	template< typename CHAR > static FORCEINLINE size_t DecodedLen( const char* Str)
+	{
+		if      ( sizeof(CHAR) == 1 ) return UTF8_DecodedLen8 ( Str);
+		else if ( sizeof(CHAR) == 2 ) return UTF8_DecodedLen16( Str);
+		else if ( sizeof(CHAR) == 4 ) return UTF8_DecodedLen32( Str);
+	}
+
+	// Returns length of decoded string
 	template< typename CHAR > static FORCEINLINE size_t Decode( CHAR* Dest, size_t DestSize, const char* Src)
 	{
 		if      ( sizeof(CHAR) == 1 ) return UTF8_Decode8 ( (char*)  Dest, DestSize, Src);
@@ -342,6 +359,8 @@ struct utf8
 		else if ( sizeof(CHAR) == 4 ) return UTF8_Decode32( (char32*)Dest, DestSize, Src);
 	}
 
+	// Returns 0 on success
+	// Returns index of character where encoder stopped in case of failure or insufficient buffer size
 	template< typename CHAR > static FORCEINLINE size_t Encode( char* Dest, size_t DestSize, const CHAR* Src)
 	{
 		if      ( sizeof(CHAR) == 1 ) return UTF8_Encode8 ( Dest, DestSize, (const char*)  Src);

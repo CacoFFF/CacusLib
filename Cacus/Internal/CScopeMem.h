@@ -36,6 +36,7 @@ public:
 	template <typename T> T* GetArray();
 
 	void* Detach();
+	void  Empty();
 };
 
 
@@ -94,12 +95,7 @@ inline CScopeMem::CScopeMem( const CScopeMem& Copy)
 //
 inline CScopeMem::~CScopeMem()
 {
-	if ( Data )
-	{
-		CFree(Data);
-		Data = nullptr;
-		Size = 0;
-	}
+	Empty();
 }
 
 
@@ -124,7 +120,7 @@ inline CScopeMem& CScopeMem::operator=( CScopeMem&& Move)
 
 inline CScopeMem& CScopeMem::operator=( const CScopeMem& Copy)
 {
-	this->~CScopeMem();
+	Empty();
 	if ( Copy.Size && Copy.Data )
 	{
 		new(this,E_InPlace) CScopeMem(Copy.Size);
@@ -168,4 +164,14 @@ inline void* CScopeMem::Detach()
 	Data = nullptr;
 	Size = 0;
 	return Result;
+}
+
+inline void CScopeMem::Empty()
+{
+	if ( Data )
+	{
+		CFree(Data);
+		Data = nullptr;
+		Size = 0;
+	}
 }

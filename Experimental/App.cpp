@@ -8,7 +8,7 @@
 
 void PrintfCallback( const char* Message, int MessageFlags)
 {
-	printf(Message);
+	printf("%s\n",Message);
 }
 
 int main()
