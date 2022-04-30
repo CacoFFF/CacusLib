@@ -410,9 +410,7 @@ const char* URI::operator*() const //TODO: NOT TESTED
 
 unsigned short URI::Port() const
 {
-	if ( port != 0 )
-		return port;
-	return DefaultPort( Scheme() );
+	return (port != 0) ? port : DefaultPort(Scheme());
 }
 
 void URI::setScheme( const char* Val)

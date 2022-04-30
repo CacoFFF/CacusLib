@@ -27,8 +27,8 @@ public:
 	~CScopeMem();
 
 	operator bool();
-	CScopeMem& operator=(CScopeMem&& Move);
-	CScopeMem& operator=(const CScopeMem& Copy);
+	CScopeMem& operator=( CScopeMem&& Move);
+	CScopeMem& operator=( const CScopeMem& Copy);
 
 	void*       GetData();
 	const void* GetData() const;
@@ -37,6 +37,7 @@ public:
 
 	void* Detach();
 	void  Empty();
+	void  Resize( size_t NewSize);
 };
 
 
@@ -173,5 +174,25 @@ inline void CScopeMem::Empty()
 		CFree(Data);
 		Data = nullptr;
 		Size = 0;
+	}
+}
+
+inline void CScopeMem::Resize( size_t NewSize)
+{
+	if ( Size != NewSize )
+	{
+		if ( Data )
+		{
+			if ( NewSize )
+				Data = CRealloc(Data, NewSize);
+			else
+				Data = CFree(Data);
+		}
+		else
+		{
+			if ( NewSize )
+				Data = CMalloc(NewSize);
+		}
+		Size = NewSize; // Late update can be used as signal
 	}
 }

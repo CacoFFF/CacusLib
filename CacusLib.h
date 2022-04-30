@@ -49,6 +49,7 @@ _CRT_SECURE_NO_WARNINGS
 #define CMalloc malloc
 #define CFree free
 #define CMemmove memmove
+#define CRealloc realloc
 
 
 //***************************************
