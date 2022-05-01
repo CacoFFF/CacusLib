@@ -186,7 +186,10 @@ inline void CScopeMem::Resize( size_t NewSize)
 			if ( NewSize )
 				Data = CRealloc(Data, NewSize);
 			else
-				Data = CFree(Data);
+			{
+				CFree(Data);
+				Data = nullptr;
+			}
 		}
 		else
 		{

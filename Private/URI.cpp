@@ -408,6 +408,49 @@ const char* URI::operator*() const //TODO: NOT TESTED
 }
 //========= URI::operator* - end ==========//
 
+//========= URI::Authority() - begin ==========//
+//
+// Exports URI's Authority as plain text contained in the string buffer 
+// authority = [userinfo@]host[:port]
+//
+const char* URI::Authority() const
+{
+	size_t Len_Auth     = auth     ? CStrlen(auth)     : 0;
+	size_t Len_Hostname = hostname ? CStrlen(hostname) : 0;
+	size_t Len_Port     = 0;
+	for ( uint32 nport=port ; nport>0 ; nport /= 10, Len_Port++);
+	size_t Len_Extra = 
+		+ (size_t)(Len_Auth     != 0)
+		+ (size_t)(Len_Port     != 0)
+		+ 4; //At least 4 bytes in place of null terminator (just in case)
+
+	char* Result = CharBuffer<char>(Len_Auth + Len_Hostname + Len_Port + Len_Extra);
+	if ( Result )
+	{
+		Result[0] = 0;
+		size_t Pos = 0;
+		if ( Len_Auth )
+		{
+			strcpy( Result + Pos                , auth    );
+			strcpy( Result + Pos + Len_Auth     , "@"     );
+			Pos += Len_Auth + 1;
+		}
+		if ( Len_Hostname )
+		{
+			strcpy( Result + Pos                , hostname);
+			Pos += Len_Hostname;
+		}
+		if ( Len_Port )
+		{
+			sprintf( Result + Pos, ":%i"        , (int)port);
+			Pos += Len_Port + 1;
+		}
+		return Result;
+	}
+	return "";
+}
+//========= URI::Authority() - end ==========//
+
 unsigned short URI::Port() const
 {
 	return (port != 0) ? port : DefaultPort(Scheme());

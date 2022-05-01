@@ -43,6 +43,7 @@ public:
 	const char* operator*() const; //Uses internal String buffer
 
 	const char*     Scheme() const;
+	const char*     Authority() const;
 	const char*     Auth() const;
 	const char*     Hostname() const;
 	unsigned short  Port() const;
@@ -51,6 +52,7 @@ public:
 	const char*     Fragment() const;
 
 	void setScheme( const char* Val);
+	void setAuthority( const char* Val);
 	void setAuth( const char* Val);
 	void setHostname( const char* Val);
 	void setPort( const char* Val);
@@ -58,7 +60,6 @@ public:
 	void setQuery( const char* Val);
 	void setFragment( const char* Val);
 
-	void setAuthority( const char* Val);
 
 	static unsigned short DefaultPort( const char* Scheme);
 private:
