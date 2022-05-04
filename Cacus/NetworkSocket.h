@@ -49,13 +49,16 @@ public:
 
 	SocketGeneric();
 	SocketGeneric( bool bTCP);
+	SocketGeneric( const SocketGeneric& Copy) = delete;
+	SocketGeneric( SocketGeneric&& Move);
+	~SocketGeneric();
 
 	static bool Init();
 	static const char* ErrorText( int32 Code=-1)     {return "";}
 	static int32 ErrorCode()                {return 0;}
 	static bool IsNonBlocking( int32 Code)  {return false;}
 
-	bool Close()                            {SetInvalid(); return false;}
+	bool Close();
 	bool IsInvalid()                        {return SocketDescriptor==InvalidSocket;}
 	void SetInvalid()                       {SocketDescriptor=InvalidSocket;}
 	bool SetNonBlocking()                   {return true;}
@@ -98,7 +101,6 @@ public:
 	static int32 ErrorCode();
 	static bool IsNonBlocking( int32 Code);
 
-	bool Close();
 	bool SetNonBlocking();
 	bool SetReuseAddr( bool bReUse=true);
 	bool SetLinger();
@@ -120,7 +122,6 @@ public:
 	static int32 ErrorCode();
 	static bool IsNonBlocking( int32 Code);
 
-	bool Close();
 	bool SetNonBlocking();
 	bool SetReuseAddr( bool bReUse=true);
 	bool SetLinger();
@@ -132,6 +133,30 @@ public:
 
 
 
+/*----------------------------------------------------------------------------
+	Socket abstraction inlines.
+----------------------------------------------------------------------------*/
 
+
+inline SocketGeneric::SocketGeneric()
+	: SocketDescriptor( SocketGeneric::InvalidSocket )
+	, LastError(0)
+{
+}
+
+
+inline SocketGeneric::SocketGeneric( SocketGeneric&& Move)
+	: SocketDescriptor(Move.SocketDescriptor)
+	, LastError       (Move.LastError)
+{
+	Move.SocketDescriptor = SocketGeneric::InvalidSocket;
+	Move.LastError        = 0;
+}
+
+
+inline SocketGeneric::~SocketGeneric()
+{
+	Close();
+}
 
 #endif

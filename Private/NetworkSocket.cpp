@@ -57,6 +57,8 @@
 		#define SOCKET int
 	#endif
 
+	#define closesocket(id) close(id)
+
 #endif
 
 
@@ -68,11 +70,6 @@
 const int_p SocketGeneric::InvalidSocket = (int_p)INVALID_SOCKET;
 const int32 SocketGeneric::Error = SOCKET_ERROR;
 
-
-SocketGeneric::SocketGeneric()
-	: SocketDescriptor( (int_p)INVALID_SOCKET )
-	, LastError(0)
-{}
 
 static int32 FirstSocket = 0;
 SocketGeneric::SocketGeneric( bool bTCP)
@@ -105,6 +102,17 @@ bool SocketGeneric::Init()
 	return true;
 }
 
+bool SocketGeneric::Close()
+{
+	if ( SocketDescriptor != INVALID_SOCKET )
+	{
+		LastError = closesocket(SocketDescriptor);
+		SocketDescriptor = INVALID_SOCKET;
+		return LastError == 0;
+	}
+	return false;
+}
+
 bool SocketGeneric::Accept( IPEndpoint& Source, CSocket& NewSocket)
 {
 	uint8 addrbuf[sizeof(sockaddr_in6)]; //Size of sockaddr_6 is 28, this should be safe for both kinds of sockets
@@ -129,8 +137,9 @@ bool SocketGeneric::Accept( IPEndpoint& Source, CSocket& NewSocket)
 			Source = *(sockaddr_in6*)addrbuf;
 		else
 			Source = *(sockaddr_in*)addrbuf;
-		NewSocket = CSocket();
+		NewSocket.Close();
 		NewSocket.SocketDescriptor = NewDescriptor;
+		NewSocket.LastError        = 0;
 		return true;
 	}
 }
@@ -376,17 +385,6 @@ bool SocketWindows::Init()
 	return true;
 }
 
-bool SocketWindows::Close()
-{
-	if ( SocketDescriptor != INVALID_SOCKET )
-	{
-		LastError = closesocket( SocketDescriptor);
-		SocketDescriptor = INVALID_SOCKET;
-		return LastError == 0;
-	}
-	return false;
-}
-
 // This connection will not block the thread, must poll repeatedly to see if it's properly established
 bool SocketWindows::SetNonBlocking()
 {
@@ -532,17 +530,6 @@ ESocketState SocketWindows::CheckState( ESocketState CheckFor, double WaitTime)
 
 const int32 SocketBSD::EPortUnreach = ECONNREFUSED;
 const char* SocketBSD::API = ("Sockets");
-
-bool SocketBSD::Close()
-{
-	if ( SocketDescriptor != INVALID_SOCKET )
-	{
-		LastError = close( SocketDescriptor);
-		SocketDescriptor = INVALID_SOCKET;
-		return LastError == 0;
-	}
-	return false;
-}
 
 // This connection will not block the thread, must poll repeatedly to see if it's properly established
 bool SocketBSD::SetNonBlocking()

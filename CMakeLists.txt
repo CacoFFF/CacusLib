@@ -126,6 +126,8 @@ add_library(
   "Private/IGD.cpp"
   "Private/CacusMem.cpp"
 
+  "Private/NetUtils/CacusHTTP.cpp"
+
   "Private/Parser/Line.cpp"
 
    ${CACUS_HEADERS}

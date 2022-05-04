@@ -30,9 +30,7 @@ public:
 	URI( const char* Address);
 	URI( const URI& rhs);
 	URI( const URI& BaseURI, const char* Address);
-	#ifndef NO_MOVE_CONSTRUCTORS
-		URI( URI&& rhs); //Old C++ compilers don't support this
-	#endif
+	URI( URI&& rhs);
 	~URI();
 
 	URI& operator=( const URI& rhs);
