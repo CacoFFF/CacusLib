@@ -129,6 +129,7 @@ add_library(
   "Private/NetUtils/CacusHTTP.cpp"
 
   "Private/Parser/Line.cpp"
+  "Private/Parser/XML.cpp"
 
    ${CACUS_HEADERS}
 )

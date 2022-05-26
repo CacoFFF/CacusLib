@@ -95,6 +95,10 @@ extern "C"
 	CACUS_API char16* CStrchr16( const char16* Str, int32 Find);
 	CACUS_API char32* CStrchr32( const char32* Str, int32 Find);
 
+	CACUS_API char*   CStrnchr8 ( const char*   Str, int32 Find, size_t findlen);
+	CACUS_API char16* CStrnchr16( const char16* Str, int32 Find, size_t findlen);
+	CACUS_API char32* CStrnchr32( const char32* Str, int32 Find, size_t findlen);
+
 	CACUS_API char*   CStrstr8 ( const char*   Str, const char*   Find);
 	CACUS_API char16* CStrstr16( const char16* Str, const char16* Find);
 	CACUS_API char32* CStrstr32( const char32* Str, const char32* Find);
@@ -152,6 +156,12 @@ template < typename CHAR > FORCEINLINE CHAR* CStrchr( const CHAR* Str, int32 Fin
 	if ( sizeof(CHAR) == 1 ) return (CHAR*)CStrchr8 ( (const char*)  Str, Find);
 	if ( sizeof(CHAR) == 2 ) return (CHAR*)CStrchr16( (const char16*)Str, Find);
 	if ( sizeof(CHAR) == 4 ) return (CHAR*)CStrchr32( (const char32*)Str, Find);
+}
+template < typename CHAR > FORCEINLINE CHAR* CStrnchr( const CHAR* Str, int32 Find, size_t findlen)
+{
+	if ( sizeof(CHAR) == 1 ) return (CHAR*)CStrnchr8 ( (const char*)  Str, Find, findlen);
+	if ( sizeof(CHAR) == 2 ) return (CHAR*)CStrnchr16( (const char16*)Str, Find, findlen);
+	if ( sizeof(CHAR) == 4 ) return (CHAR*)CStrnchr32( (const char32*)Str, Find, findlen);
 }
 template < typename CHAR > FORCEINLINE CHAR* CStrstr( const CHAR* Str, const CHAR* Find)
 {
@@ -433,6 +443,16 @@ template<typename CHAR> FORCEINLINE CHAR* ExtractLine( const CHAR*& Pos)
 	if ( sizeof(CHAR) == 4 ) return (CHAR*)ExtractLine32( (const char32*&)Pos);
 }
 
+//Eat up a character on stream
+template<typename CHAR> FORCEINLINE bool EatChar( const CHAR*& Pos, uint32 C)
+{
+	if ( *Pos == (CHAR)C )
+	{
+		Pos++;
+		return true;
+	}
+	return false;
+}
 
 //*******************************************************************
 // TEMPLATED FIXERS AND EXPANDERS
@@ -440,8 +460,12 @@ template<typename CHAR> FORCEINLINE CHAR* ExtractLine( const CHAR*& Pos)
 // AdvanceTo - single char
 template<typename CHAR> inline bool AdvanceTo( const CHAR*& Pos, CHAR Char)
 {
-	CHAR CharList[2] = { Char, '\0' };
-	return AdvanceTo( Pos, CharList);
+loop:
+	const CHAR C = *Pos;
+	if ( C == Char ) return true;
+	if ( C == '\0' ) return false;
+	Pos++;
+	goto loop;
 }
 
 // ParseToken - modify stream pointer + allow non-const char buffers

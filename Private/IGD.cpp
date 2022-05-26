@@ -26,6 +26,7 @@ https://datatracker.ietf.org/doc/html/rfc6970
 
 #include "Parser/Line.h"
 #include "Parser/UTF.h"
+#include "Parser/XML.h"
 
 #include "IGD_TEST.h"
 #include <stdio.h>
@@ -200,8 +201,23 @@ bool SetUpnpPort( int Port, bool Enable)
 		return false;
 	}
 
+	CParserFastXML XMLParser;
+	if ( !XMLParser.Parse(Session.RootDescFile.Output) )
+	{
+		DebugCallback("Unable to parse UPnP Root device descriptor", CACUS_CALLBACK_TEST);
+		return false;
+	}
 
-	wprintf(L"RootDesc: \n%s\n", Session.RootDescFile.Output);
+	auto Browser = XMLParser.CreateBrowser();
+	if ( Browser.Start(L"root") && Browser.Down(L"device") && Browser.Down(L"serviceList") && Browser.Down(L"service") )
+	{
+		do
+		{
+			wprintf(L"Found service %s in root device\r\n", *Browser);
+		} while ( Browser.Next(L"service") );
+	}
+
+//	wprintf(L"RootDesc: \n%s\n", Session.RootDescFile.Output);
 	
 
 

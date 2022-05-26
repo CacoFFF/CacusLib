@@ -202,6 +202,7 @@ size_t CStrlen8 ( const char*  Str)  { return templ_strlen(Str); }
 size_t CStrlen16( const char16* Str) { return templ_strlen(Str); }
 size_t CStrlen32( const char32* Str) { return templ_strlen(Str); }
 
+
 /* ==============================================
 	CHAR FIND
 */
@@ -219,6 +220,25 @@ template<typename CHAR> inline CHAR* templ_strchr( const CHAR* Str, int32 Find)
 char*   CStrchr8 ( const char*   Str, int32 Find) { return templ_strchr(Str,Find); }
 char16* CStrchr16( const char16* Str, int32 Find) { return templ_strchr(Str,Find); }
 char32* CStrchr32( const char32* Str, int32 Find) { return templ_strchr(Str,Find); }
+
+
+/* ==============================================
+	CHAR FIND N
+*/
+template<typename CHAR> inline CHAR* templ_strnchr( const CHAR* Str, int32 Find, size_t findlen)
+{
+	CHAR c = (CHAR)Find; //Convert
+
+	for ( ; *Str && findlen>0; Str++, findlen-- )
+		if ( *Str == c )
+			return (CHAR*)Str;
+	if ( c == '\0' ) //Zero-terminator needs this
+		return (CHAR*)Str;
+	return nullptr;
+}
+char*   CStrnchr8 ( const char*   Str, int32 Find, size_t findlen) { return templ_strnchr(Str,Find,findlen); }
+char16* CStrnchr16( const char16* Str, int32 Find, size_t findlen) { return templ_strnchr(Str,Find,findlen); }
+char32* CStrnchr32( const char32* Str, int32 Find, size_t findlen) { return templ_strnchr(Str,Find,findlen); }
 
 
 /* ==============================================
