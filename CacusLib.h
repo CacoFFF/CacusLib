@@ -12,6 +12,10 @@
 #endif
 #define USES_CACUSLIB
 
+#if CACUS_BUILDING_LIBRARY
+	#error Wrong CacusLib.h included
+#endif
+
 /*
 _WINDOWS
 _CRT_SECURE_NO_WARNINGS
@@ -74,6 +78,7 @@ _CRT_SECURE_NO_WARNINGS
 	#define int64 SQWORD
 	#define CACUSLIB_TYPES*/
 	#define CACUSLIB_ENUMS
+	#define CACUSLIB_ENUM_NOINIT 1
 /*	#undef FORCEINLINE
 	#ifdef DISABLE_CPP11
 		#define char16 _WORD

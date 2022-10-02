@@ -12,7 +12,7 @@
 //Types are all 32 bits
 
 #ifdef _WINDOWS
-	#define ENTRY_TYPE uint32 __stdcall
+	#define ENTRY_TYPE unsigned long __stdcall
 #elif __GNUC__
 	#include <sys/types.h>
 	#define ENTRY_TYPE void*

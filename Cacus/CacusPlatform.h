@@ -1,6 +1,6 @@
 /*=============================================================================
 	CacusPlatform.h
-	Author: Fernando Velázquez
+	Author: Fernando Velï¿½zquez
 
 	Defines for new datatypes.
 	Designed to make UE4 code and ports work without edition.
@@ -23,14 +23,18 @@
 
 
 //Private CacusLib.h header, each project should have it's own adaptation.
-#include "CacusLib.h"
+#if CACUS_BUILDING_LIBRARY
+	#include "../Private/CacusLib.h"
+#else
+	#include "CacusLib.h"
+#endif
 
 
 #ifndef CACUSLIB_TYPES
 											// Unsigned base types.
 	typedef unsigned char 		uint8;		// 8-bit  unsigned.
 	typedef unsigned short		uint16;		// 16-bit unsigned.
-	typedef unsigned long		uint32;		// 32-bit unsigned.
+	typedef unsigned int		uint32;		// 32-bit unsigned.
 	typedef unsigned long long	uint64;		// 64-bit unsigned.
 
 											// Signed base types.
@@ -43,7 +47,6 @@
 	#ifdef _M_X64
 		typedef int64 int_p;
 	#elif __LP64__
-		typedef uint64 size_t;
 		typedef int64 int_p;
 	#else
 	//	typedef unsigned int size_t; //Defined in Visual Studio as native type

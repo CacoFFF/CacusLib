@@ -389,7 +389,7 @@ bool SocketWindows::Init()
 bool SocketWindows::SetNonBlocking()
 {
 	uint32 NoBlock = 1;
-	LastError = ioctlsocket( SocketDescriptor, FIONBIO, &NoBlock );
+	LastError = ioctlsocket( SocketDescriptor, FIONBIO, (u_long*)&NoBlock );
 	return LastError == 0;
 }
 

@@ -4,7 +4,7 @@
 	Main include file for CacusLib, must be included first in order to use
 	various CacusLib headers/features.
 
-	Author: Fernando Velázquez.
+	Author: Fernando Velï¿½zquez.
 =============================================================================*/
 
 #ifndef USES_CACUS_BASE
@@ -12,7 +12,7 @@
 
 #include "CacusPlatform.h"
 
-#ifdef _INC_STDLIB
+#if defined(_INC_STDLIB) || defined(_GLIBCXX_STDLIB_H)
 #include "Internal/CScopeMem.h"
 #endif
 

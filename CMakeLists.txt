@@ -73,8 +73,8 @@ message(STATUS "Selected output: ${PLATFORM_PREFIX}")
 
 
 # Build options
-option(CACUSLIB_BUILD_XCGE, "Set to true to build for XC_Engine." FALSE)
-option(CACUSLIB_STATIC_BUILD, "Set to true to create static library." FALSE)
+option(CACUSLIB_BUILD_XCGE "Set to true to build for XC_Engine." FALSE)
+option(CACUSLIB_STATIC_BUILD "Set to true to create static library." FALSE)
 
 if(CACUSLIB_STATIC_BUILD)
   set(CACUSLIB_LINKAGE STATIC)
@@ -91,6 +91,10 @@ elseif(LINUX)
   add_definitions(-lpthread)
   add_definitions(-fvisibility=hidden)
   add_compile_definitions(_UNIX=1)
+  if(CACUSLIB_BUILD_XCGE)
+    add_definitions(-m32)
+    add_link_options(-m32)
+  endif()
 endif()
 
 if(CACUSLIB_BUILD_XCGE)
@@ -135,6 +139,9 @@ add_library(
 )
 
 if (LINUX)
+
+  set_target_properties(Cacus PROPERTIES PREFIX "")
+
 
   target_link_libraries(
     Cacus

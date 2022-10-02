@@ -16,6 +16,7 @@ FORCEINLINE void Sleep( uint32 MilliSeconds )
 	usleep( MilliSeconds * 1000 );
 }
 
+#ifndef _INCL_PLATFORM_ATOMICS_H_
 struct FLinuxPlatformAtomics
 {
 	static FORCEINLINE int32 InterlockedIncrement( volatile int32* Value )
@@ -41,6 +42,7 @@ struct FLinuxPlatformAtomics
 };
 typedef FLinuxPlatformAtomics FPlatformAtomics;
 #endif
+#endif
 
 
 #ifdef _MSC_VER
@@ -64,6 +66,7 @@ __declspec(dllimport) void __stdcall Sleep( unsigned long dwMilliseconds);
 #endif
 
 
+#ifndef _INCL_PLATFORM_ATOMICS_H_
 struct FWindowsPlatformAtomics
 {
 	static FORCEINLINE int InterlockedIncrement( volatile int32* Value )
@@ -88,6 +91,7 @@ struct FWindowsPlatformAtomics
 	}
 };
 typedef FWindowsPlatformAtomics FPlatformAtomics;
+#endif
 
 #pragma warning (pop)
 
