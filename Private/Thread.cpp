@@ -121,7 +121,7 @@ int CThread::Run()
 		return 0;
 	CAtomicLock::CScope SL(Lock);
 #if _WINDOWS
-	void* Handle = CreateThread( nullptr, 0, CThread::CThreadEntryContainer, this, 0, (LPDWORD)&tId );
+	void* Handle = CreateThread( nullptr, 0, (LPTHREAD_START_ROUTINE)CThread::CThreadEntryContainer, this, 0, (LPDWORD)&tId );
 	if ( !Handle )
 		return tId = 0;
 	CloseHandle( Handle);

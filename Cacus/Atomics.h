@@ -16,8 +16,7 @@ FORCEINLINE void Sleep( uint32 MilliSeconds )
 	usleep( MilliSeconds * 1000 );
 }
 
-#ifndef _INCL_PLATFORM_ATOMICS_H_
-struct FLinuxPlatformAtomics
+struct CLinuxPlatformAtomics
 {
 	static FORCEINLINE int32 InterlockedIncrement( volatile int32* Value )
 	{
@@ -40,8 +39,7 @@ struct FLinuxPlatformAtomics
 		return __sync_val_compare_and_swap(Dest, Comparand, Exchange);
 	}
 };
-typedef FLinuxPlatformAtomics FPlatformAtomics;
-#endif
+typedef CLinuxPlatformAtomics CPlatformAtomics;
 #endif
 
 
@@ -65,9 +63,7 @@ __declspec(dllimport) void __stdcall Sleep( unsigned long dwMilliseconds);
 };
 #endif
 
-
-#ifndef _INCL_PLATFORM_ATOMICS_H_
-struct FWindowsPlatformAtomics
+struct CWindowsPlatformAtomics
 {
 	static FORCEINLINE int InterlockedIncrement( volatile int32* Value )
 	{
@@ -90,8 +86,7 @@ struct FWindowsPlatformAtomics
 		return (int32)_InterlockedCompareExchange((long*)Dest, (long)Exchange, (long)Comparand);
 	}
 };
-typedef FWindowsPlatformAtomics FPlatformAtomics;
-#endif
+typedef CWindowsPlatformAtomics CPlatformAtomics;
 
 #pragma warning (pop)
 
@@ -110,12 +105,12 @@ public:
 		do
 		{
 			while ( *Lock); //Additional TEST operation before WRITE prevents scalability issues
-		} while ( FPlatformAtomics::InterlockedCompareExchange(Lock, 1, 0) );
+		} while ( CPlatformAtomics::InterlockedCompareExchange(Lock, 1, 0) );
 	}
 	
 	FORCEINLINE ~CSpinLock()
 	{
-		FPlatformAtomics::InterlockedExchange( Lock, 0);
+		CPlatformAtomics::InterlockedExchange( Lock, 0);
 	}
 };
 
@@ -133,12 +128,12 @@ public:
 		{
 			while ( *Lock)
 				Sleep(SleepInterval); //Additional TEST operation before WRITE prevents scalability issues
-		} while ( FPlatformAtomics::InterlockedCompareExchange(Lock, 1, 0) );
+		} while ( CPlatformAtomics::InterlockedCompareExchange(Lock, 1, 0) );
 	}
 	
 	FORCEINLINE ~CSleepLock()
 	{
-		FPlatformAtomics::InterlockedExchange( Lock, 0);
+		CPlatformAtomics::InterlockedExchange( Lock, 0);
 	}
 };
 
@@ -151,12 +146,12 @@ public:
 	CScopeCounter( volatile int32* InCounter)
 		: Counter(InCounter)
 	{
-		FPlatformAtomics::InterlockedIncrement(Counter);
+		CPlatformAtomics::InterlockedIncrement(Counter);
 	}
 
 	~CScopeCounter()
 	{
-		FPlatformAtomics::InterlockedDecrement(Counter);
+		CPlatformAtomics::InterlockedDecrement(Counter);
 	}
 };
 
@@ -170,15 +165,15 @@ public:
 
 	bool IncrementIfLesser( int32 Num)
 	{
-		if ( FPlatformAtomics::InterlockedIncrement( &Counter) <= Num )
+		if ( CPlatformAtomics::InterlockedIncrement( &Counter) <= Num )
 			return true;
-		FPlatformAtomics::InterlockedDecrement( &Counter);
+		CPlatformAtomics::InterlockedDecrement( &Counter);
 		return false;
 	}
 
 	void Decrement()
 	{
-		FPlatformAtomics::InterlockedDecrement( &Counter);
+		CPlatformAtomics::InterlockedDecrement( &Counter);
 	}
 };
 
@@ -205,12 +200,12 @@ public:
 				else
 					Sleep(0);
 			}
-		} while ( FPlatformAtomics::InterlockedCompareExchange( &Lock, 1, 0) );
+		} while ( CPlatformAtomics::InterlockedCompareExchange( &Lock, 1, 0) );
 	}
 
 	void Release()
 	{
-		FPlatformAtomics::InterlockedExchange( &Lock, 0);
+		CPlatformAtomics::InterlockedExchange( &Lock, 0);
 	}
 
 	bool IsActive() const

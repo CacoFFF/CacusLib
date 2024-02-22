@@ -115,7 +115,7 @@ int CDbg_SlotCallback( CACUS_DEBUG_CALLBACK_FUNC Callback)
 
 void CDbg_UnlockCallback()
 {
-	FPlatformAtomics::InterlockedExchange( &Lock, 0);
+	CPlatformAtomics::InterlockedExchange( &Lock, 0);
 }
 
 

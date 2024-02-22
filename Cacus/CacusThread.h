@@ -12,17 +12,17 @@
 //Types are all 32 bits
 
 #ifdef _WINDOWS
-	#define ENTRY_TYPE unsigned long __stdcall
+	#define ENTRY_TYPE uint32 __stdcall
 #elif __GNUC__
 	#include <sys/types.h>
 	#define ENTRY_TYPE void*
 #endif
 
-#define THREAD_END_OK           0UL
-#define THREAD_END_NOT_OK       1UL
-#define THREAD_END_EXCEPTION    2UL
-#define THREAD_END_REPEAT     100UL
-#define THREAD_END_LOOP       101UL
+#define THREAD_END_OK         ((uint32)  0UL)
+#define THREAD_END_NOT_OK     ((uint32)  1UL)
+#define THREAD_END_EXCEPTION  ((uint32)  2UL)
+#define THREAD_END_REPEAT     ((uint32)100UL)
+#define THREAD_END_LOOP       ((uint32)101UL)
 
 //THREAD_END_REPEAT sleeps(0) before re-entrying
 //THREAD_END_LOOP retries immediately
