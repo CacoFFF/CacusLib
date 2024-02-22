@@ -60,8 +60,6 @@ public:
 	~CMemExStack();
 	uint8* PushBytes( size_t InSize, size_t InAlign);
 
-	friend void* operator new( size_t Size, CMemExStack& Mem, size_t Count=1, size_t Align=EALIGN_PLATFORM_PTR);
-	friend void operator delete( void*, CMemExStack&, size_t, size_t) {};
 private:
 	void CACUS_API PushBlock( size_t InSize);
 };
@@ -96,11 +94,16 @@ inline uint8* CMemExStack::PushBytes( size_t InSize, size_t InAlign=EALIGN_PLATF
 	return Result;
 }
 
-inline void* operator new( size_t Size, CMemExStack& Mem, size_t Count, size_t Align )
+
+// Friends
+inline void* operator new(size_t Size, CMemExStack& Mem, size_t Count = 1, size_t Align = EALIGN_PLATFORM_PTR)
 {
-	return Mem.PushBytes( Size*Count, Align );
+	return Mem.PushBytes(Size * Count, Align);
 }
 
+inline void operator delete(void*, CMemExStack&, size_t, size_t)
+{
+};
 
 
 //*****************************************************//
