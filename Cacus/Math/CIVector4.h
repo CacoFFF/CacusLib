@@ -1,6 +1,6 @@
 /*=============================================================================
 	CIVector4.h
-	Author: Fernando Velázquez
+	Author: Fernando Velï¿½zquez
 
 	Main CIVector4 implementation.
 	This header is public domain.
@@ -27,7 +27,7 @@ inline CIVector4::CIVector4(EZero)
 	_mm_storeu_si128( (__m128i*)&i, _mm_setzero_si128());
 }
 
-inline CIVector4::CIVector4(__m128i reg)
+inline CIVector4::CIVector4(CI_reg128 reg)
 {
 	_mm_storeu_si128( (__m128i*)&i, reg);
 }
@@ -78,12 +78,12 @@ inline CIVector4 CIVector4::operator/=( const CIVector4& Other)
 	return (*this = *this / Other);
 }
 */
-inline CIVector4::operator __m128() const
+inline CIVector4::operator CF_reg128() const
 {
 	return 	_mm_castsi128_ps( _mm_loadu_si128( (__m128i*)&i));
 }
 
-inline CIVector4::operator __m128i() const
+inline CIVector4::operator CI_reg128() const
 {
 	return _mm_loadu_si128( (__m128i*)&i);
 }

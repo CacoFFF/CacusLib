@@ -1,5 +1,5 @@
-﻿# CacusLib CMake definitions
-cmake_minimum_required (VERSION 3.12)
+# CacusLib CMake definitions
+cmake_minimum_required (VERSION 3.14)
 project ("CacusLib")
 
 set(CMAKE_CXX_STANDARD 11)
@@ -36,6 +36,8 @@ macro(check_defs _CDEFS _VALUE)
 
   if(${_VALUE})
     message(STATUS "Check success for ${_VALUE}")
+  else()
+    message(STATUS "Check failed for ${_VALUE}")
   endif()
 endmacro(check_defs)
 
@@ -53,10 +55,9 @@ check_defs(
   CACUSLIB_ARM
 )
 check_defs(
-  "defined(__arm64__)"
+  "defined(__arm64__) || defined(__aarch64__)"
   CACUSLIB_ARM64
 )
-#TODO: NEON SUPPORT CHECK
 
 if(CACUSLIB_AMD64)
   set(PLATFORM_PREFIX "${PLATFORM_PREFIX}64")
@@ -91,10 +92,6 @@ elseif(LINUX)
   add_definitions(-lpthread)
   add_definitions(-fvisibility=hidden)
   add_compile_definitions(_UNIX=1)
-  if(CACUSLIB_BUILD_XCGE)
-    add_definitions(-m32)
-    add_link_options(-m32)
-  endif()
 endif()
 
 if(CACUSLIB_BUILD_XCGE)

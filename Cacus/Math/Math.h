@@ -1,6 +1,6 @@
 /*=============================================================================
 	Math.h
-	Author: Fernando Velázquez
+	Author: Fernando Velï¿½zquez
 
 	General vector math header.
 	This header is public domain.
@@ -18,7 +18,7 @@
  * to whatever functionaliy is needed.
  * (conditions below not precise)
  */
-#if ((_MSC_VER >= 1600) || (__GNUC__ >= 4))
+#if (__i386__ || _M_IX86 || __x86_64__ || _M_X64) && ((_MSC_VER >= 1600) || (__GNUC__ >= 4))
 	#if (__GNUC__ && __GNUC__ <= 6)
 		#warning "GCC needs to be at least 7.x for decent vectorization, expect unoptimized code."
 	#endif
@@ -26,10 +26,9 @@
 	typedef __m128  CF_reg128;
 	typedef __m128i CI_reg128;
 #else
-	#define CACUS_NO_INTRINSICS
-	#error "NO SEE CODE!!"
-	class CF_reg128 {};
-	class CI_reg128 {};
+	#define CACUS_NO_INTRINSICS 1
+	struct CF_reg128 { float F[4]; };
+	struct CI_reg128 { int I[4]; };
 #endif
 
 /*----------------------------------------------------------------------------
@@ -49,7 +48,11 @@ int32 CFloor( double Value);
 
 #define _mm_pshufd_ps(v,i) _mm_castsi128_ps( _mm_shuffle_epi32( _mm_castps_si128(v), i))
 
+#if CACUS_NO_INTRINSICS
+inline float GetX( CF_reg128 V) { return V.F[0]; }
+#else
 inline float GetX( CF_reg128 V) { float X; _mm_store_ss( &X, V); return X; }
+#endif
 
 enum E3D         { E_3D = 0 };
 enum EZero       { E_Zero = 0};
@@ -145,7 +148,7 @@ struct CIVector4
 	CIVector4( const int32* data);
 	CIVector4( const int32* data, EXYXY);
 	CIVector4( EZero);
-	CIVector4( __m128i reg);
+	CIVector4( CI_reg128 reg);
 
 	CIVector4 operator=( const CIVector4& Other);
 	CIVector4 operator+( const CIVector4& Other) const;
@@ -158,8 +161,8 @@ struct CIVector4
 //	CIVector4 operator*=( const CIVector4& Other);
 //	CIVector4 operator/=( const CIVector4& Other);
 
-	operator __m128() const;
-	operator __m128i() const;
+	operator CF_reg128() const;
+	operator CI_reg128() const;
 
 	CFVector4 Float() const;
 	int MSB_Mask() const;
